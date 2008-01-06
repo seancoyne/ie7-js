@@ -37,7 +37,7 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
 
 (function() {
 IE7 = {
-  toString: function(){return "IE7 version 2.0 (alpha)"}
+  toString: function(){return "IE7 version 2.0 (beta)"}
 };
 
 // -----------------------------------------------------------------------
