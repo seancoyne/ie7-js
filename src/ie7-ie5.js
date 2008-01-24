@@ -1,35 +1,33 @@
 
 if (appVersion < 5.5) {
   undefined = Undefined();
+
+  ANON = "HTML:!"; // for anonymous content
   
   // Fix String.replace (Safari1.x/IE5.0).
-  if ("".replace(/^/, String)) {
-    var GLOBAL = /(g|gi)$/;
-    var _replace = String.prototype.replace; 
-    String.prototype.replace = function(expression, replacement) {
-      if (typeof replacement == "function") { // Safari doesn't like functions
-        if (expression && expression.constructor == RegExp) {
-          var regexp = expression;
-          var global = regexp.global;
-          if (global == null) global = GLOBAL.test(regexp);
-          // we have to convert global RexpExps for exec() to work consistently
-          if (global) regexp = new RegExp(regexp.source); // non-global
-        } else {
-          regexp = new RegExp(rescape(expression));
-        }
-        var match, string = this, result = "";
-        while (string && (match = regexp.exec(string))) {
-          result += string.slice(0, match.index) + replacement.apply(this, match);
-          string = string.slice(match.index + match[0].length);
-          if (!global) break;
-        }
-        return result + string;
+  var GLOBAL = /(g|gi)$/;
+  var _String_replace = String.prototype.replace; 
+  String.prototype.replace = function(expression, replacement) {
+    if (typeof replacement == "function") { // Safari doesn't like functions
+      if (expression && expression.constructor == RegExp) {
+        var regexp = expression;
+        var global = regexp.global;
+        if (global == null) global = GLOBAL.test(regexp);
+        // we have to convert global RexpExps for exec() to work consistently
+        if (global) regexp = new RegExp(regexp.source); // non-global
+      } else {
+        regexp = new RegExp(rescape(expression));
       }
-      return _replace.apply(this, arguments);
-    };
-  }
-
-	ANON = "HTML:!"; // for anonymous content
+      var match, string = this, result = "";
+      while (string && (match = regexp.exec(string))) {
+        result += string.slice(0, match.index) + replacement.apply(this, match);
+        string = string.slice(match.index + match[0].length);
+        if (!global) break;
+      }
+      return result + string;
+    }
+    return _String_replace.apply(this, arguments);
+  };
   
   Array.prototype.pop = function() {
     if (this.length) {

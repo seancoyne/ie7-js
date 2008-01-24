@@ -1,4 +1,8 @@
 
+// =========================================================================
+// ie7-dhtml.js
+// =========================================================================
+
 (function() {
 
   /* ---------------------------------------------------------------------
@@ -10,12 +14,14 @@
     width: "(width|paddingLeft|paddingRight|borderLeftWidth|borderRightWidth|borderLeftStyle|borderRightStyle)",
     height:  "(height|paddingTop|paddingBottom|borderTopHeight|borderBottomHeight|borderTopStyle|borderBottomStyle)"
   };
+  
   var PROPERTY_NAMES = {
     width: "fixedWidth",
     height: "fixedHeight",
     right: "width",
     bottom: "height"
   };
+  
   var DASH_LETTER = /-(\w)/g;
   var PROPERTY_NAME = /\w+/;
   

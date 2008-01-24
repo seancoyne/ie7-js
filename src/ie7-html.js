@@ -1,8 +1,10 @@
 
-var PREFIX = appVersion < 5.5 ? "HTML:" : "";
+// =========================================================================
+// ie7-html.js
+// =========================================================================
 
 // default font-sizes
-HEADER += "h1{font-size:2em}h2{font-size:1.5em;}h3{font-size:1.17em;}h4{font-size:1em}h5{font-size:.83em}h6{font-size:.67em}";
+//HEADER += "h1{font-size:2em}h2{font-size:1.5em;}h3{font-size:1.17em;}h4{font-size:1em}h5{font-size:.83em}h6{font-size:.67em}";
 
 IE7.HTML = new (Fix.extend({ // single instance  
   fixed: {},
@@ -17,7 +19,7 @@ IE7.HTML = new (Fix.extend({ // single instance
   apply: function() {
     for (var i = 0; i < this.fixes.length; i++) {
       var match = cssQuery(this.fixes[i][0]);
-      var fix = this.fixes[i][1] || this.fixElement;
+      var fix = this.fixes[i][1];
       for (var j = 0; j < match.length; j++) fix(match[j]);
     }
   },
@@ -25,21 +27,6 @@ IE7.HTML = new (Fix.extend({ // single instance
   addRecalc: function() {
     // recalcs occur whenever the document is refreshed using document.recalc()
     this.recalcs.push(arguments);
-  },
-  
-  fixElement: function(element) {
-    var fixedElement = document.createElement("<" + PREFIX + element.outerHTML.slice(1));
-    if (element.outerHTML.slice(-2) != "/>") {
-      // remove child nodes and copy them to the new element
-      var endTag = "</"+ element.tagName + ">", nextSibling;
-      while ((nextSibling = element.nextSibling) && nextSibling.outerHTML != endTag) {
-        fixedElement.appendChild(nextSibling);
-      }
-      // remove the closing tag
-      if (nextSibling) nextSibling.removeNode();
-    }
-    // replace the broken tag with the namespaced version
-    element.parentNode.replaceChild(fixedElement, element);
   },
   
   recalc: function() {
@@ -63,7 +50,7 @@ if (appVersion < 7) {
   // provide support for the <abbr> tag.
   //  this is a proper fix, it preserves the DOM structure and
   //  <abbr> elements report the correct tagName & namespace prefix
-  IE7.HTML.addFix("abbr");
+  document.createElement("abbr");
   
   // bind to the first child control
   IE7.HTML.addRecalc("label", function(label) {

@@ -1,5 +1,9 @@
 
-IE7.isEmpty = function(element) {
+// =========================================================================
+// ie8-cssQuery.js
+// =========================================================================
+
+IE7._isEmpty = function(element) {
   element = element.firstChild;
   while (element) {
     if (element.nodeType == 3 || (element.nodeType == 1 && element.nodeName != "!")) return false;
@@ -15,7 +19,7 @@ IE7._isLang = function(element, code) {
 
 function _nthChild(match, args, position, last) {
   // ugly but it works...
-  last = /last/i.test(match) ? last + "+1-" : "";
+  if (last) last += "+1-";
   if (!isNaN(args)) args = "0n+" + args;
   else if (args == "even") args = "2n";
   else if (args == "odd") args = "2n+1";
@@ -32,7 +36,7 @@ function _nthChild(match, args, position, last) {
   return query;
 };
 
-_PSEUDO_CLASSES = { //-dean: lang()
+_PSEUDO_CLASSES = {
   "link":          "e%1.currentStyle['ie7-link']=='link'",
   "visited":       "e%1.currentStyle['ie7-link']=='visited'",
   "checked":       "e%1.checked",

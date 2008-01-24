@@ -1,16 +1,13 @@
 
+// =========================================================================
+// ie7-css.js
+// =========================================================================
+
 var HYPERLINK = /a(#[\w-]+)?(\.[\w-]+)?:(hover|active)/i;
 var BRACE1 = /\s*\{\s*/, BRACE2 = /\s*\}\s*/, COMMA = /\s*\,\s*/;
 var FIRST_LINE_LETTER = /(.*)(:first-(line|letter))/;
 
-var UNKNOWN = /UNKNOWN|([:.])\w+\1/;
-
-// -----------------------------------------------------------------------
-//  IE7 CSS
-// -----------------------------------------------------------------------
-
-// assume html unless explicitly defined
-var HEADER = ":link{ie7-link:link}:visited{ie7-link:visited}";
+//var UNKNOWN = /UNKNOWN|([:.])\w+\1/i;
 
 var styleSheets = document.styleSheets;
 
@@ -31,28 +28,60 @@ IE7.CSS = new (Fix.extend({ // single instance
   
   init: function() {
     var NONE = "^\x01$";
+    var CLASS = "\\[class=?[^\\]]*\\]";
     var pseudoClasses = [];
     if (this.pseudoClasses) pseudoClasses.push(this.pseudoClasses);
     var dynamicPseudoClasses = this.dynamicPseudoClasses.toString(); 
     if (dynamicPseudoClasses) pseudoClasses.push(dynamicPseudoClasses);
     pseudoClasses = pseudoClasses.join("|");
-    var unknown = appVersion < 7 ? ["[>+~[(]|([:.])\\w+\\1"] : [];
+    var unknown = appVersion < 7 ? ["[>+~[(]|([:.])\\w+\\1"] : [CLASS];
     if (pseudoClasses) unknown.push(":(" + pseudoClasses + ")");
     this.UNKNOWN = new RegExp(unknown.join("|") || NONE, "i");
-    var complex = appVersion < 7 ? ["\\[[^\\]]+\\]|[^\\s(\\[]+\\s*[+~]"] : [];
+    var complex = appVersion < 7 ? ["\\[[^\\]]+\\]|[^\\s(\\[]+\\s*[+~]"] : [CLASS];
     var complexRule = complex.concat();
     if (pseudoClasses) complexRule.push(":(" + pseudoClasses + ")");
-    Rule.COMPLEX = new RegExp(complexRule.join("|") || NONE, "gi");
-    if (dynamicPseudoClasses) complex.push(":(" + dynamicPseudoClasses + ")");
-    DynamicRule.COMPLEX = new RegExp(complex.join("|") || NONE, "gi");
+    Rule.COMPLEX = new RegExp(complexRule.join("|") || NONE, "i");
+    if (this.pseudoClasses) complex.push(":(" + this.pseudoClasses + ")");
+    DynamicRule.COMPLEX = new RegExp(complex.join("|") || NONE, "i");
     DynamicRule.MATCH = new RegExp(dynamicPseudoClasses ? "(.*):(" + dynamicPseudoClasses + ")(.*)" : NONE, "i");
     
     this.createStyleSheet();
     this.refresh();
   },
   
-  refresh: function() {
-    this.styleSheet.cssText = HEADER + this.screen + this.print;
+	addEventHandler: function() {
+		addEventHandler.apply(null, arguments);
+	},
+  
+  addFix: function(expression, replacement) {
+    this.parser.add(expression, replacement);
+  },
+  
+  addRecalc: function(propertyName, test, handler, replacement) {
+    // recalcs occur whenever the document is refreshed using document.recalc()
+    test = new RegExp("([{;\\s])" + propertyName + "\\s*:\\s*" + test + "[^;}]*");
+    var id = this.recalcs.length;
+    if (replacement) replacement = propertyName + ":" + replacement;
+    this.addFix(test, function(match, $1) {
+      return (replacement ? $1 + replacement : match) + ";ie7-" + match.slice(1) + ";ie7_recalc" + id + ":1";
+    });
+    this.recalcs.push(arguments);
+    return id;
+  },
+  
+  apply: function() {
+    this.getInlineStyles();
+    new StyleSheet("screen");
+    this.trash();
+  },
+  
+  createStyleSheet: function() {
+    // create the IE7 style sheet
+    this.styleSheet = document.createStyleSheet();
+    // flag it so we can ignore it during parsing
+    this.styleSheet.ie7 = true;
+    this.styleSheet.owningElement.ie7 = true;
+    this.styleSheet.cssText = HEADER;
   },
   
   getInlineStyles: function() {
@@ -65,14 +94,18 @@ IE7.CSS = new (Fix.extend({ // single instance
     }
   },
   
-  apply: function() {
-    this.getInlineStyles();
-    new StyleSheet("screen");
-    this.trash();
-  },
-  
-  addFix: function(expression, replacement) {
-    this.parser.add(expression, replacement);
+  getText: function(styleSheet, path) {
+    // explorer will trash unknown selectors (it converts them to "UNKNOWN").
+    // so we must reload external style sheets (internal style sheets can have their text
+    //  extracted through the innerHTML property).
+      // load the style sheet text from an external file
+    try {
+      var cssText = styleSheet.cssText;
+    } catch (e) {
+      cssText = "";
+    }
+    if (httpRequest) cssText = loadFile(styleSheet.href, path) || cssText;
+    return cssText;
   },
   
   recalc: function() {
@@ -117,43 +150,20 @@ IE7.CSS = new (Fix.extend({ // single instance
     }
   },
   
-  // recalcs occur whenever the document is refreshed using document.recalc()
-  addRecalc: function(propertyName, test, handler, replacement) {
-    test = new RegExp("([{;\\s])" + propertyName + "\\s*:\\s*" + test + "[^;}]*");
-    var id = this.recalcs.length;
-    if (replacement) replacement = propertyName + ":" + replacement;
-    this.addFix(test, function(match, $1, $2) {
-      return (replacement ?  $1 + replacement : match) +
-        ";ie7-" + match.slice(1) + ";ie7_recalc" + id + ":1";
-    });
-    this.recalcs.push(arguments);
-    return id;
-  },
-  
-  getText: function(styleSheet, path) {
-    // explorer will trash unknown selectors (it converts them to "UNKNOWN").
-    // so we must reload external style sheets (internal style sheets can have their text
-    //  extracted through the innerHTML property).
-      // load the style sheet text from an external file
-    var cssText = styleSheet.cssText;
-    if (httpRequest && UNKNOWN.test(cssText)) cssText = loadFile(styleSheet.href, path) || cssText;
-    return cssText;
-  },
-  
-  createStyleSheet: function() {
-    // create the IE7 style sheet
-    this.styleSheet = document.createStyleSheet();
-    // flag it so we can ignore it during parsing
-    this.styleSheet.ie7 = true;
-    this.styleSheet.owningElement.ie7 = true;
-    this.styleSheet.cssText = HEADER;
+  refresh: function() {
+    this.styleSheet.cssText = HEADER + this.screen + this.print;
   },
   
   trash: function() {
     // trash the old style sheets
     for (var i = 0; i < styleSheets.length; i++) {
-      if (!styleSheets[i].ie7 && styleSheets[i].cssText) {
-        styleSheets[i].cssText = "";
+      if (!styleSheets[i].ie7) {
+        try {
+          var cssText = styleSheets[i].cssText;
+        } catch (e) {
+          cssText = "";
+        }
+        if (cssText) styleSheets[i].cssText = "";
       }
     }
   }
@@ -177,20 +187,12 @@ var StyleSheet = Base.extend({
       if (PseudoElement && (match = selector.match(PseudoElement.MATCH))) {
         return new PseudoElement(match[1], match[2], cssText);
       } else if (match = selector.match(DynamicRule.MATCH)) {
-        if (!HYPERLINK.test(match) || DynamicRule.COMPLEX.test(match)) {
+        if (!HYPERLINK.test(match[0]) || DynamicRule.COMPLEX.test(match[0])) {
           return new DynamicRule(selector, match[1], match[2], match[3], cssText);
         }
       } else return new Rule(selector, cssText);
     }
     return selector + " {" + cssText + "}";
-  },
-  
-  load: function() {
-    this.cssText = "";
-    this.getText();
-    this.parse();
-    this.cssText = decode(this.cssText);
-    fileCache = {};
   },
   
   getText: function() {
@@ -272,6 +274,14 @@ var StyleSheet = Base.extend({
     }
   },
   
+  load: function() {
+    this.cssText = "";
+    this.getText();
+    this.parse();
+    this.cssText = decode(this.cssText);
+    fileCache = {};
+  },
+  
   parse: function() {
     this.cssText = IE7.CSS.parser.exec(this.cssText);
     
@@ -308,14 +318,14 @@ var PseudoElement;
 // IE7 style rules
 // -----------------------------------------------------------------------
 
-var Rule = Base.extend({
+var Rule = IE7.Rule = Base.extend({
   // properties
   constructor: function(selector, cssText) {
     this.id = IE7.CSS.rules.length;
     this.className = Rule.PREFIX + this.id;
-    selector = (selector).match(FIRST_LINE_LETTER) || selector || "*";
+    selector = selector.match(FIRST_LINE_LETTER) || selector || "*";
     this.selector = selector[1] || selector;
-    this.selectorText = Rule.simple(this.selector) + "." + this.className + (selector[2] || "");
+    this.selectorText = this.parse(this.selector) + (selector[2] || "");
     this.cssText = cssText;
     this.MATCH = new RegExp("\\s" + this.className + "(\\s|$)", "g");
     IE7.CSS.rules.push(this);
@@ -329,31 +339,64 @@ var Rule = Base.extend({
     element.className += " " + this.className;
   },
   
-  remove: function(element) {
-    // deallocate this class
-    element.className = element.className.replace(this.MATCH, "$1");
-  },
-  
   recalc: function() {
     // execute the underlying css query for this class
     var match = cssQuery(this.selector);
     // add the class name for all matching elements
-    for (i = 0; i < match.length; i++) this.add(match[i]);
+    for (var i = 0; i < match.length; i++) this.add(match[i]);
+  },
+
+  parse: function(selector) {
+    // attempt to preserve specificity for "loose" parsing by
+    //  removing unknown tokens from a css selector but keep as
+    //  much as we can..
+    var simple = selector.replace(Rule.CHILD, " ").replace(Rule.COMPLEX, "");
+    if (appVersion < 7) simple = simple.replace(Rule.MULTI, "");
+    var tags = match(simple, Rule.TAGS).length - match(selector, Rule.TAGS).length;
+    var classes = match(simple, Rule.CLASSES).length - match(selector, Rule.CLASSES).length + 1;
+    while (classes > 0 && Rule.CLASS.test(simple)) {
+      simple = simple.replace(Rule.CLASS, "");
+      classes--;
+    }
+    while (tags > 0 && Rule.TAG.test(simple)) {
+      simple = simple.replace(Rule.TAG, "$1*");
+      tags--;
+    }
+    simple += "." + this.className;
+    classes = Math.min(classes, 2);
+    tags = Math.min(tags, 2);
+    var score = -10 * classes - tags;
+    if (score > 0) {
+      simple = simple + "," + Rule.MAP[score] + " " + simple;
+    }
+    return simple;
+  },
+  
+  remove: function(element) {
+    // deallocate this class
+    element.className = element.className.replace(this.MATCH, "$1");
   },
   
   toString: function() {
     return this.selectorText + " {" + this.cssText + "}";
   }
 }, {
-  PREFIX: "ie7_class",
   CHILD: />/g,
-  
-  simple: function(selector) {
-    // attempt to preserve specificity for "loose" parsing by
-    //  removing unknown tokens from a css selector but keep as
-    //  much as we can..
-    //selector = AttributeSelector.parse(selector);
-    return selector.replace(this.CHILD, " ").replace(this.COMPLEX, "").replace();
+  CLASS: /\.[\w-]+/,
+  CLASSES: /[.:\[]/g,
+  MULTI: /(\.[\w-]+)+/g,
+  PREFIX: "ie7_class",
+  TAG: /^\w+|([\s>+~])\w+/,
+  TAGS: /^\w|[\s>+~]\w/g,
+  MAP: {
+    1:  "html",
+    2:  "html body",
+    10: ".ie7_html",
+    11: "html.ie7_html",
+    12: "html.ie7_html body",
+    20: ".ie7_html .ie7_body",
+    21: "html.ie7_html .ie7_body",
+    22: "html.ie7_html body.ie7_body"
   }
 });
 
@@ -361,7 +404,7 @@ var Rule = Base.extend({
 // IE7 dynamic style
 // -----------------------------------------------------------------------
 
-// class properties:
+// object properties:
 // attach: the element that an event handler will be attached to
 // target: the element that will have the IE7 class applied
 
@@ -428,10 +471,10 @@ var DynamicPseudoClass = Base.extend({
 if (appVersion < 7) {
   var Hover = new DynamicPseudoClass("hover", function(element) {
     var instance = arguments;
-    addEventHandler(element, appVersion < 5.5 ? "onmouseover" : "onmouseenter", function() {
+    IE7.CSS.addEventHandler(element, appVersion < 5.5 ? "onmouseover" : "onmouseenter", function() {
       Hover.register(instance);
     });
-    addEventHandler(element, appVersion < 5.5 ? "onmouseout" : "onmouseleave", function() {
+    IE7.CSS.addEventHandler(element, appVersion < 5.5 ? "onmouseout" : "onmouseleave", function() {
       Hover.unregister(instance);
     });
   });

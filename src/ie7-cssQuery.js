@@ -1,4 +1,8 @@
 
+// =========================================================================
+// ie7-cssQuery.js
+// =========================================================================
+
 function cssQuery(selector, context, single) {
   if (!_cache[selector]) {
     reg = []; // store for RegExp objects
@@ -18,7 +22,6 @@ function cssQuery(selector, context, single) {
       block += Array(match(block, /\{/g).length + 1).join("}");
       fn += block;
     }
-    //alert(selectors+"\n"+cssParser.unescape(fn));
     eval(format(_FN, reg) + cssParser.unescape(fn) + "return s?null:r}");
     _cache[selector] = _selectorFunction;
   }
@@ -26,6 +29,12 @@ function cssQuery(selector, context, single) {
 };
 
 var _MSIE5 = appVersion < 6;
+
+var _EVALUATED = /^(href|src)$/;
+var _ATTRIBUTES = {
+  "class": "className",
+  "for": "htmlFor"
+};
 
 IE7._indexed = 1;
 
@@ -39,16 +48,6 @@ IE7._byId = function(document, id) {
   }
   return null;
 };
-  
-// =========================================================================
-// Element
-// =========================================================================
-
-var _EVALUATED = /^(href|src)$/;
-var _ATTRIBUTES = {
-  "class": "className",
-  "for": "htmlFor"
-};
 
 IE7._getAttribute = function(element, name) {
   if (name == "src" && element.pngSrc) return element.pngSrc;
@@ -57,6 +56,8 @@ IE7._getAttribute = function(element, name) {
   if (attribute && (attribute.specified || name == "value")) {
     if (_EVALUATED.test(name)) {
       return element.getAttribute(name, 2);
+    } else if (name == "class") {
+     return element.className.replace(/\sie7_class\d+/g, "");
     } else if (name == "style") {
      return element.style.cssText;
     } else {
@@ -84,7 +85,7 @@ IE7._getPreviousElementSibling = function(node) {
 };
 
 // =========================================================================
-// DOM/selectors-api/CSSParser.js
+// CSSParser
 // =========================================================================
 
 var IMPLIED_ASTERISK = /([\s>+~,]|[^(]\+|^)([#.:\[])/g,
@@ -95,7 +96,6 @@ var IMPLIED_ASTERISK = /([\s>+~,]|[^(]\+|^)([#.:\[])/g,
 var CSSParser = RegGrp.extend({
   constructor: function(items) {
     this.base(items);
-    this.cache = {};
     this.sorter = new RegGrp;
     this.sorter.add(/:not\([^)]*\)/, RegGrp.IGNORE);
     this.sorter.add(/([ >](\*|[\w-]+))([^: >+~]*)(:\w+-child(\([^)]+\))?)([^: >+~]*)/, "$1$3$6$4");
@@ -117,11 +117,6 @@ var CSSParser = RegGrp.extend({
   optimise: function(selector) {
     // optimise wild card descendant selectors
     return this.sorter.exec(selector.replace(WILD_CARD, ">* "));
-  },
-
-  parse: function(selector) {
-    return this.cache[selector] ||
-      (this.cache[selector] = this.unescape(this.exec(this.escape(selector))));
   },
 
   unescape: function(selector) {
@@ -164,7 +159,7 @@ var cssParser = new CSSParser({
     _wild = false;
     var replacement = "var e%2=IE7._byId(d,'%4');if(e%2&&";
     if (tagName != "*") replacement += "e%2.nodeName=='%3'&&";
-    replacement += "e%1==d||e%1.contains(e%2)){";
+    replacement += "(e%1==d||e%1.contains(e%2))){";
     if (_list) replacement += format("i%1=n%1.length;", _list);
     return format(replacement, _index++, _index, tagName.toUpperCase(), id);
   },
@@ -247,7 +242,7 @@ var cssParser = new CSSParser({
     } else {
       attr = format("IE7._getAttribute(e%1,'%2')", _index, attr);
     }
-    var replacement = _OPERATORS[operator || ""];
+    var replacement = _OPERATORS[operator || ""] || "0";
     if (replacement && replacement.source) {
       reg.push(new RegExp(format(replacement.source, rescape(cssParser.unescape(value)))));
       replacement = "reg[%2].test(%1)";
@@ -256,7 +251,8 @@ var cssParser = new CSSParser({
     return "if(" + format(replacement, attr, value) + "){";
   },
   
-  ":([\\w-]+)(\\(([^)]+)\\))?": function(match, pseudoClass, $2, args) { // pseudo class selectors
-    return "if(" + format(_PSEUDO_CLASSES[pseudoClass] || "false", _index, args || "") + "){";
+  ":+([\\w-]+)(\\(([^)]+)\\))?": function(match, pseudoClass, $2, args) { // pseudo class selectors
+    pseudoClass = _PSEUDO_CLASSES[pseudoClass];
+    return "if(" + (pseudoClass ? format(pseudoClass, _index, args || "")  : "0") + "){";
   }
 });

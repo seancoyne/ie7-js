@@ -1,4 +1,8 @@
 
+// =========================================================================
+// ie8-layout.js
+// =========================================================================
+
 IE7.CSS.addRecalc("border-spacing", NUMERIC, function(element) {
   if (element.currentStyle.borderCollapse != "collapse") {
     element.cellSpacing = getPixelValue(element, element.currentStyle["border-spacing"]);

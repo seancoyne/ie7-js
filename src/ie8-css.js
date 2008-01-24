@@ -1,9 +1,16 @@
 
+// =========================================================================
+// ie8-css.js
+// =========================================================================
+
 var BRACKETS = "\\([^)]*\\)";
 
 if (IE7.CSS.pseudoClasses) IE7.CSS.pseudoClasses += "|";
 IE7.CSS.pseudoClasses += "before|after|last\\-child|only\\-child|empty|root|" +
   "not|nth\\-child|nth\\-last\\-child|contains|lang".split("|").join(BRACKETS + "|") + BRACKETS;
+
+// pseudo-elements can be declared with a double colon
+encoder.add(/::/, ":");
 
 // -----------------------------------------------------------------------
 // dynamic pseudo-classes
@@ -12,12 +19,12 @@ IE7.CSS.pseudoClasses += "before|after|last\\-child|only\\-child|empty|root|" +
 var Focus = new DynamicPseudoClass("focus", function(element) {
   var instance = arguments;
   
-  addEventHandler(element, "onfocus", function() {
+  IE7.CSS.addEventHandler(element, "onfocus", function() {
     Focus.unregister(instance); // in case it starts with focus
     Focus.register(instance);
   });
   
-  addEventHandler(element, "onblur", function() {
+  IE7.CSS.addEventHandler(element, "onblur", function() {
     Focus.unregister(instance);
   });
   
@@ -29,7 +36,7 @@ var Focus = new DynamicPseudoClass("focus", function(element) {
 
 var Active = new DynamicPseudoClass("active", function(element) {
   var instance = arguments;
-  addEventHandler(element, "onmousedown", function() {
+  IE7.CSS.addEventHandler(element, "onmousedown", function() {
     Active.register(instance);
   });
 });
@@ -42,77 +49,77 @@ addEventHandler(document, "onmouseup", function() {
 
 // :checked
 var Checked = new DynamicPseudoClass("checked", function(element) {
-	if (typeof element.checked != "boolean") return;
-	var instance = arguments;
-	addEventHandler(element, "onpropertychange", function() {
-		if (event.propertyName == "checked") {
-			if (element.checked) Checked.register(instance);
-			else Checked.unregister(instance);
-		}
-	});
-	// check current checked state
-	if (element.checked) Checked.register(instance);
+  if (typeof element.checked != "boolean") return;
+  var instance = arguments;
+  IE7.CSS.addEventHandler(element, "onpropertychange", function() {
+    if (event.propertyName == "checked") {
+      if (element.checked) Checked.register(instance);
+      else Checked.unregister(instance);
+    }
+  });
+  // check current checked state
+  if (element.checked) Checked.register(instance);
 });
 
 // :enabled
 var Enabled = new DynamicPseudoClass("enabled", function(element) {
-	if (typeof element.disabled != "boolean") return;
-	var instance = arguments;
-	addEventHandler(element, "onpropertychange", function() {
-		if (event.propertyName == "disabled") {
-			if (!element.isDisabled) Enabled.register(instance);
-			else Enabled.unregister(instance);
-		}
-	});
-	// check current disabled state
-	if (!element.isDisabled) Enabled.register(instance);
+  if (typeof element.disabled != "boolean") return;
+  var instance = arguments;
+  IE7.CSS.addEventHandler(element, "onpropertychange", function() {
+    if (event.propertyName == "disabled") {
+      if (!element.isDisabled) Enabled.register(instance);
+      else Enabled.unregister(instance);
+    }
+  });
+  // check current disabled state
+  if (!element.isDisabled) Enabled.register(instance);
 });
 
 // :disabled
 var Disabled = new DynamicPseudoClass("disabled", function(element) {
-	if (typeof element.disabled != "boolean") return;
-	var instance = arguments;
-	addEventHandler(element, "onpropertychange", function() {
-		if (event.propertyName == "disabled") {
-			if (element.isDisabled) Disabled.register(instance);
-			else Disabled.unregister(instance);
-		}
-	});
-	// check current disabled state
-	if (element.isDisabled) Disabled.register(instance);
+  if (typeof element.disabled != "boolean") return;
+  var instance = arguments;
+  IE7.CSS.addEventHandler(element, "onpropertychange", function() {
+    if (event.propertyName == "disabled") {
+      if (element.isDisabled) Disabled.register(instance);
+      else Disabled.unregister(instance);
+    }
+  });
+  // check current disabled state
+  if (element.isDisabled) Disabled.register(instance);
 });
 
 // :indeterminate (Kevin Newman)
 var Indeterminate = new DynamicPseudoClass("indeterminate", function(element) {
-	if (typeof element.indeterminate != "boolean") return;
-	var instance = arguments;
-	addEventHandler(element, "onpropertychange", function() {
-		if (event.propertyName == "indeterminate") {
-			if (element.indeterminate) Indeterminate.register(instance);
-			else Indeterminate.unregister(instance);
-		}
-	});
-	addEventHandler(element, "onclick", function() {
-		Indeterminate.unregister(instance);
-	});
-	// clever Kev says no need to check this up front
+  if (typeof element.indeterminate != "boolean") return;
+  var instance = arguments;
+  IE7.CSS.addEventHandler(element, "onpropertychange", function() {
+    if (event.propertyName == "indeterminate") {
+      if (element.indeterminate) Indeterminate.register(instance);
+      else Indeterminate.unregister(instance);
+    }
+  });
+  IE7.CSS.addEventHandler(element, "onclick", function() {
+    Indeterminate.unregister(instance);
+  });
+  // clever Kev says no need to check this up front
 });
 
 // :target
 var Target = new DynamicPseudoClass("target", function(element) {
-	var instance = arguments;
-	// if an element has a tabIndex then it can become "active".
-	//  The default is zero anyway but it works...
-	if (!element.tabIndex) element.tabIndex = 0;
-	// this doesn't detect the back button. I don't know how to do that :-(
-	addEventHandler(document, "onpropertychange", function() {
-		if (event.propertyName == "activeElement") {
-			if (element.id == location.hash.slice(1)) Target.register(instance);
-			else Target.unregister(instance);
-		}
-	});
-	// check the current location
-	if (element.id == location.hash.slice(1)) Target.register(instance);
+  var instance = arguments;
+  // if an element has a tabIndex then it can become "active".
+  //  The default is zero anyway but it works...
+  if (!element.tabIndex) element.tabIndex = 0;
+  // this doesn't detect the back button. I don't know how to do that :-(
+  IE7.CSS.addEventHandler(document, "onpropertychange", function() {
+    if (event.propertyName == "activeElement") {
+      if (element.id && element.id == location.hash.slice(1)) Target.register(instance);
+      else Target.unregister(instance);
+    }
+  });
+  // check the current location
+  if (element.id && element.id == location.hash.slice(1)) Target.register(instance);
 });
 
 // -----------------------------------------------------------------------
@@ -129,10 +136,7 @@ var POSITION_MAP = {
   after1: "beforeEnd"
 };
 
-// CSS text required by the "content" property
-//HEADER += ".ie7_anon{display:none}";
-
-var PseudoElement = Rule.extend({
+var PseudoElement = IE7.PseudoElement = Rule.extend({
   constructor: function(selector, position, cssText) {
     // initialise object properties
     this.position = position;
@@ -162,13 +166,6 @@ var PseudoElement = Rule.extend({
     }
   },
   
-  recalc: function() {
-    if (this.content == null) return;
-    for (var i = 0; i < this.match.length; i++) {
-      this.create(this.match[i]);
-    }
-  },
-  
   create: function(target) {
     var generated = target.runtimeStyle[this.position];
     if (generated) {
@@ -194,6 +191,13 @@ var PseudoElement = Rule.extend({
     }
   },
   
+  recalc: function() {
+    if (this.content == null) return;
+    for (var i = 0; i < this.match.length; i++) {
+      this.create(this.match[i]);
+    }
+  },
+  
   toString: function() {
     return "." + this.className + "{display:inline}";
   }
@@ -204,10 +208,3 @@ var PseudoElement = Rule.extend({
   
   count: 0
 });
-  
-// -----------------------------------------------------------------------
-// encoding
-// -----------------------------------------------------------------------
-
-// pseudo-elements can be declared with a double colon
-encoder.add(/::/, ":");

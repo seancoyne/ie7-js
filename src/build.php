@@ -20,7 +20,8 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
   Unknown W Brackets, Benjamin Westfarer, Rob Eberhardt,
   Bill Edney, Kevin Newman, James Crompton, Matthew Mastracci,
   Doug Wright, Richard York, Kenneth Kolano, MegaZone,
-  Thomas Verelst
+  Thomas Verelst, Mark 'Tarquin' Wilton-Jones, Rainer Åhlfors,
+  David Zulaica, Ken Kolano, Kevin Newman
 */
 
 // =======================================================================
@@ -36,24 +37,19 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
 // hr{margin:1em auto} (doesn't look right in IE5)
 
 (function() {
-IE7 = {
-  toString: function(){return "IE7 version 2.0 (beta)"}
-};
 
-// -----------------------------------------------------------------------
-// globals
-// -----------------------------------------------------------------------
-var Undefined = K();
-// IE7 version info
-// error reporting
-var ie7_debug = /ie7_debug/.test(top.location.search);
-//-var alert = ie7_debug ? function(message){window.alert(IE7+"\n\n"+message)} : Undefined;
-// IE version info
+IE7 = {
+  toString: function(){return "IE7 version 2.0 (beta2)"}
+};
 var appVersion = IE7.appVersion = navigator.appVersion.match(/MSIE (\d\.\d)/)[1];
+
+if (/ie7_off/.test(top.location.search) || appVersion < 5) return;
+
+var Undefined = K();
 var quirksMode = document.compatMode != "CSS1Compat";
-// handy
-var documentElement, body, viewport;
+var documentElement = document.documentElement, body, viewport;
 var ANON = "!";
+var HEADER = ":link{ie7-link:link}:visited{ie7-link:visited}";
 
 // -----------------------------------------------------------------------
 // external
@@ -72,12 +68,6 @@ function getPath(href, path) {
 
 // get the path to this script
 var script = document.scripts[document.scripts.length - 1];
-// create global variables from the inner text of the IE7 script
-try {
-  eval(script.innerHTML);
-} catch (e) {
-  // ignore errors
-}
 var path = getPath(script.src);
 
 // we'll use microsoft's http request object to load external files
@@ -119,87 +109,22 @@ include("ie7-ie5.js");
 
 <?php include("base2.js") ?>
 
-// clone the fixWidth function to create a fixHeight function
-var rotater = new RegGrp({
-  Width: "Height",
-  width: "height",
-  Left:  "Top",
-  left:  "top",
-  Right: "Bottom",
-  right: "bottom",
-  X:     "Y"
-});
-
-function rotate(fn) {
-  return rotater.exec(fn);
-};
-
-var Fix = Base.extend({
-  constructor: function() {
-    this.fixes = [];
-    this.recalcs = [];
-  },
-  init: Undefined
-});
-
 // -----------------------------------------------------------------------
-// initialisation
+// parsing
 // -----------------------------------------------------------------------
-
-function init() {
-  // IE7 can be turned "off"
-  if (/ie7_off/.test(top.location.search) || appVersion < 5) return;
-
-  // frequently used references
-  documentElement = document.documentElement;
-  body = document.body;
-  IE7._viewport = viewport = quirksMode ? body : documentElement;
-  
-  if (quirksMode) ie7Quirks();
-  
-  IE7.CSS.init();  
-  IE7.HTML.init();
-  
-  IE7.HTML.apply();  
-  IE7.CSS.apply();
-  
-  recalc();
-};
-
-// a store for functions that will be called when refreshing IE7
-var recalcs = [];
-function addRecalc(recalc) {
-  recalcs.push(recalc);
-};
-
-function recalc() {
-  IE7.HTML.recalc();
-  // re-apply style sheet rules (re-calculate ie7 classes)
-  IE7.CSS.recalc();
-  // apply global fixes to the document
-  for (var i = 0; i < recalcs.length; i++) recalcs[i]();
-};
 
 var Parser = RegGrp.extend({ignoreCase: true});
 
-// -----------------------------------------------------------------------
-//  cssQuery
-// -----------------------------------------------------------------------
+var ENCODED = /\x01(\d+)/g,
+    QUOTES  = /'/g, 
+    STRING = /^\x01/,
+    UNICODE = /\\([\da-fA-F]{1,4})/g;
 
-<?php
-include("ie7-cssQuery.js");
-?>
-
-// -----------------------------------------------------------------------
-// encoding
-// -----------------------------------------------------------------------
-
-var QUOTE = /'/g, STRING = /^\x01/;
 var _strings = [];
 
 var encoder = new Parser({
   // comments
-  "<!\\-\\-|\\-\\->": "",
+  "<!\\-\\-[^>]+\\-\\->": "",
   "\\/\\*[^*]*\\*+([^\\/][^*]*\\*+)*\\/": "",
   // get rid
   "@(namespace|import)[^;\\n]+[;\\n]": "",
@@ -214,30 +139,36 @@ function encode(cssText) {
   return encoder.exec(cssText);
 };
 
+function decode(cssText) {
+  return cssText.replace(ENCODED, function(match, index) {
+    return _strings[index - 1];
+  });
+};
+
 function encodeString(string) {
-  return "\x01" + _strings.push(string.replace(/\\([\da-fA-F]{1,4})/g, function(match, chr) {
-    return "\\u" + "0000".slice(chr.length) + match;
-  }).slice(1, -1).replace(QUOTE, "\\'"));
+  return "\x01" + _strings.push(string.replace(UNICODE, function(match, chr) {
+    return eval("'\\u" + "0000".slice(chr.length) + chr + "'");
+  }).slice(1, -1).replace(QUOTES, "\\'"));
 };
 
 function getString(value) {
   return STRING.test(value) ? _strings[value.slice(1) - 1] : value;
 };
 
-// -----------------------------------------------------------------------
-// decoding
-// -----------------------------------------------------------------------
-
-var decoder = new Parser({
-  "\\x01(\\d+)": function(match, index) {
-    return _strings[index - 1];
-  }
+// clone a "width" function to create a "height" function
+var rotater = new RegGrp({
+  Width: "Height",
+  width: "height",
+  Left:  "Top",
+  left:  "top",
+  Right: "Bottom",
+  right: "bottom",
+  X:     "Y"
 });
 
-function decode(cssText) {
-  return decoder.exec(cssText);
+function rotate(fn) {
+  return rotater.exec(fn);
 };
-
 
 // -----------------------------------------------------------------------
 // event handling
@@ -310,21 +241,33 @@ var getPixelValue = function(element, value) {
   return value;
 };
 
-// create a temporary element which is used to inherit styles
-//  from the target element. the temporary element can be resized
-//  to determine pixel widths/heights
-function createTempElement(tagName) {
-  var element = document.createElement(tagName || "object");
-  element.style.cssText = "position:absolute;padding:0;display:block;border:none;clip:rect(0 0 0 0);left:-9999";
-  element.ie7_anon = true;
-  return element;
-};
-
 // -----------------------------------------------------------------------
 // generic
 // -----------------------------------------------------------------------
 
 var $IE7 = "ie7-";
+
+var Fix = Base.extend({
+  constructor: function() {
+    this.fixes = [];
+    this.recalcs = [];
+  },
+  init: Undefined
+});
+
+// a store for functions that will be called when refreshing IE7
+var recalcs = [];
+function addRecalc(recalc) {
+  recalcs.push(recalc);
+};
+
+IE7.recalc = function() {
+  IE7.HTML.recalc();
+  // re-apply style sheet rules (re-calculate ie7 classes)
+  IE7.CSS.recalc();
+  // apply global fixes to the document
+  for (var i = 0; i < recalcs.length; i++) recalcs[i]();
+};
 
 function isFixed(element) {
   return element.currentStyle["ie7-position"] == "fixed";
@@ -342,11 +285,18 @@ function setOverrideStyle(element, propertyName, value) {
   element.runtimeStyle[propertyName] = value;
 };
 
-// -----------------------------------------------------------------------
-//  modules
-// -----------------------------------------------------------------------
+// create a temporary element which is used to inherit styles
+//  from the target element. the temporary element can be resized
+//  to determine pixel widths/heights
+function createTempElement(tagName) {
+  var element = document.createElement(tagName || "object");
+  element.style.cssText = "position:absolute;padding:0;display:block;border:none;clip:rect(0 0 0 0);left:-9999";
+  element.ie7_anon = true;
+  return element;
+};
 
 <?php
+include("ie7-cssQuery.js");
 include('ie7-css.js');
 include('ie7-html.js');
 include('ie7-layout.js');
@@ -364,15 +314,45 @@ if (preg_match('/ie8/', $_SERVER['QUERY_STRING'])) {
 ?>
 
 // -----------------------------------------------------------------------
-//  initialise
+// initialisation
 // -----------------------------------------------------------------------
 
-document.write("<script id=__ready defer src=//:><\/script>");
-document.all.__ready.onreadystatechange = function() {
-  if (this.readyState == "complete") {
-    this.removeNode(); // tidy
-    init();
+IE7.loaded = true;
+
+(function() {
+  try {
+    // http://javascript.nwbox.com/IEContentLoaded/
+    documentElement.doScroll("left");
+  } catch (e) {
+    setTimeout(arguments.callee, 1);
+    return;
   }
-};
+  // execute the inner text of the IE7 script
+  try {
+    eval(script.innerHTML);
+  } catch (e) {
+    // ignore errors
+  }
+  PNG = new RegExp(rescape(typeof IE7_PNG_SUFFIX == "string" ? IE7_PNG_SUFFIX : "-trans.png") + "$", "i");
+
+  // frequently used references
+  body = document.body;
+  viewport = quirksMode ? body : documentElement;
+
+  // classes
+  body.className += " ie7_body";
+  documentElement.className += " ie7_html";
+
+  if (quirksMode) ie7Quirks();
+
+  IE7.CSS.init();
+  IE7.HTML.init();
+
+  IE7.HTML.apply();
+  IE7.CSS.apply();
+
+  IE7.recalc();
+})();
+
 
 })();

@@ -1,5 +1,5 @@
 
-// This is a cut-down version of base2
+// This is a cut-down version of base2 (http://code.google.com/p/base2/)
 
 var _slice = Array.prototype.slice;
 
@@ -51,56 +51,48 @@ var _RG_BRACKETS        = /\(/g;
 
 var RegGrp = Base.extend({
   constructor: function(values) {
-		this[_KEYS] = [];
-		this.merge(values);
+    this[_KEYS] = [];
+    this.merge(values);
   },
 
-  exec: function(string, replacement) {
-    string += ''; // type-safe
-    if (arguments.length == 1) {
-      var self = this;
-      var keys = this[_KEYS];
-      replacement = function(match) {
-        if (match) {
-          var item, offset = 1, i = 0;
-          // Loop through the RegGrp items.
-          while ((item = self[_HASH + keys[i++]])) {
-            var next = offset + item.length + 1;
-            if (arguments[offset]) { // do we have a result?
-              var replacement = item.replacement;
-              switch (typeof replacement) {
-                case "function":
-                  return replacement.apply(self, _slice.call(arguments, offset, next));
-                case "number":
-                  return arguments[offset + replacement];
-                default:
-                  return replacement;
-              }
-            }
-            offset = next;
+  exec: function(string) {
+    var items = this, keys = this[_KEYS];    
+    return String(string).replace(new RegExp(this, this.ignoreCase ? "gi" : "g"), function() {
+      var item, offset = 1, i = 0;
+      // Loop through the RegGrp items.
+      while ((item = items[_HASH + keys[i++]])) {
+        var next = offset + item.length + 1;
+        if (arguments[offset]) { // do we have a result?
+          var replacement = item.replacement;
+          switch (typeof replacement) {
+            case "function":
+              return replacement.apply(items, _slice.call(arguments, offset, next));
+            case "number":
+              return arguments[offset + replacement];
+            default:
+              return replacement;
           }
         }
-        return "";
-      };
-    }
-    return string.replace(new RegExp(this, this.ignoreCase ? "gi" : "g"), replacement);
+        offset = next;
+      }
+    });
   },
 
-	add: function(expression, replacement) {
+  add: function(expression, replacement) {
     if (expression instanceof RegExp) {
       expression = expression.source;
     }
-		if (!this[_HASH + expression]) this[_KEYS].push(String(expression));
-		this[_HASH + expression] = new RegGrp.Item(expression, replacement);
-	},
+    if (!this[_HASH + expression]) this[_KEYS].push(String(expression));
+    this[_HASH + expression] = new RegGrp.Item(expression, replacement);
+  },
 
   merge: function(values) {
-		for (var i in values) this.add(i, values[i]);
-	},
+    for (var i in values) this.add(i, values[i]);
+  },
 
   toString: function() {
-		// back references not supported in simple RegGrp
-		return "(" + this[_KEYS].join(")|(") + ")";
+    // back references not supported in simple RegGrp
+    return "(" + this[_KEYS].join(")|(") + ")";
   }
 }, {
   IGNORE: "$0",
@@ -146,11 +138,6 @@ var RegGrp = Base.extend({
 
 function extend(object, source) { // or extend(object, key, value)
   if (object && source) {
-    if (arguments.length > 2) { // Extending with a key/value pair.
-      var key = source;
-      source = {};
-      source[key] = arguments[2];
-    }
     var proto = (typeof source == "function" ? Function : Object).prototype;
     // Add constructor, toString etc
     var i = _HIDDEN.length, key;
@@ -225,10 +212,6 @@ function rescape(string) {
 function trim(string) {
   return String(string).replace(_LTRIM, "").replace(_RTRIM, "");
 };
-
-// =========================================================================
-// lang/functional.js
-// =========================================================================
 
 function K(k) {
   return function() {

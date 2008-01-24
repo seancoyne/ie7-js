@@ -1,12 +1,16 @@
 
+// =========================================================================
+// ie7-graphics.js
+// =========================================================================
+
 // a small transparent image used as a placeholder
 var BLANK_GIF = makePath("blank.gif", path);
 
 var ALPHA_IMAGE_LOADER = "DXImageTransform.Microsoft.AlphaImageLoader";
-var FILTER = "progid:" + ALPHA_IMAGE_LOADER + "(src='%1',sizingMethod='%2')";
+var PNG_FILTER = "progid:" + ALPHA_IMAGE_LOADER + "(src='%1',sizingMethod='%2')";
   
 // regular expression version of the above
-var PNG = new RegExp((window.IE7_PNG_SUFFIX || "-trans.png") + "$", "i");
+var PNG;
 
 var filtered = [];
 
@@ -28,18 +32,15 @@ function fixImage(element) {
 };
 
 if (appVersion >= 5.5 && appVersion < 7) {
-
-  var BACKGROUND = /background(-image)?\s*:\s*([^\(};]*)url\(([^\)]+)\)([^;}]*)/;
-  
   // ** IE7 VARIABLE
   // e.g. only apply the hack to files ending in ".png"
   // IE7_PNG_SUFFIX = ".png";
 
   // replace background(-image): url(..) ..  with background(-image): .. ;filter: ..;
-  IE7.CSS.addFix(BACKGROUND, function(match, $1, $2, url, $4) {
+  IE7.CSS.addFix(/background(-image)?\s*:\s*([^};]*)?url\(([^\)]+)\)([^;}]*)?/, function(match, $1, $2, url, $4) {
     url = getString(url);
-    return PNG.test(url) ? "filter:" + format(FILTER, url, "crop") +
-      ";zoom:1;background" + $1 + ":" + $2 + "none" + $4 : match;
+    return PNG.test(url) ? "filter:" + format(PNG_FILTER, url, "crop") +
+      ";zoom:1;background" + ($1||"") + ":" + ($2||"") + "none" + ($4||"") : match;
   });
   
   // -----------------------------------------------------------------------
@@ -76,7 +77,7 @@ function addFilter(element, sizingMethod) {
     filter.src = element.src;
     filter.enabled = true;
   } else {
-    element.runtimeStyle.filter = format(FILTER, element.src, sizingMethod || "scale");
+    element.runtimeStyle.filter = format(PNG_FILTER, element.src, sizingMethod || "scale");
     filtered.push(element);
   }
   // remove the real image

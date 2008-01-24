@@ -1,4 +1,8 @@
 
+// =========================================================================
+// ie7-fixed.js
+// =========================================================================
+
 new function(_) {
   if (appVersion >= 7) return;
   
@@ -127,14 +131,19 @@ new function(_) {
     clipWidth(element);
     clipHeight(element);
   };
-  
+
   function clipWidth(element) {
+    var fixWidth = element.runtimeStyle.fixWidth;
+    element.runtimeStyle.borderRightWidth = "";
+    element.runtimeStyle.width = fixWidth ? getPixelWidth(element, fixWidth) : "";
     if (element.currentStyle.width != "auto") {
       var rect = element.getBoundingClientRect();
       var width = element.offsetWidth - viewport.clientWidth + rect.left - 2;
       if (width >= 0) {
+        element.runtimeStyle.borderRightWidth = "0px";
         width = Math.max(getPixelValue(element, element.currentStyle.width) - width, 0);
         setOverrideStyle(element, "width",  width);
+        return width;
       }
     }
   };
@@ -149,16 +158,16 @@ new function(_) {
     if (element.runtimeStyle.fixWidth) {
       element.runtimeStyle.width = getPixelWidth(element, element.runtimeStyle.fixWidth);
     }
-    if (recalc) {
-      // if the element is fixed on the right then no need to recalculate
-      if (!element.runtimeStyle.autoLeft) return;
-    } else {
+    //if (recalc) {
+    //  // if the element is fixed on the right then no need to recalculate
+    //  if (!element.runtimeStyle.autoLeft) return;
+    //} else {
       element.runtimeStyle.shiftLeft = 0;
       element.runtimeStyle._left = element.currentStyle.left;
       // is the element fixed on the right?
       element.runtimeStyle.autoLeft = element.currentStyle.right != "auto" &&
         element.currentStyle.left == "auto";
-    }
+    //}
     // reset the element's "left" value and get it's natural position
     element.runtimeStyle.left = "";
     element.runtimeStyle.screenLeft = getScreenLeft(element);

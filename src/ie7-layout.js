@@ -1,4 +1,8 @@
 
+// =========================================================================
+// ie7-layout.js
+// =========================================================================
+
 var NUMERIC = "[.\\d]";
 
 new function(_) {
@@ -201,6 +205,7 @@ var layout = IE7.Layout = this;
     // handle window resize
     var clientWidth = 0;
     addResize(function() {
+      if (!viewport) return;
       var i, wider = (clientWidth < viewport.clientWidth);
       clientWidth = viewport.clientWidth;
       // resize elements with "min-width" set
@@ -226,7 +231,7 @@ var layout = IE7.Layout = this;
   // -----------------------------------------------------------------------
   // fix CSS
   // -----------------------------------------------------------------------
-    if (quirksMode && window.IE7_BOX_MODEL !== false) {
+    if (quirksMode) {
       IE7.CSS.addRecalc("width", NUMERIC, applyWidth);
     }
     if (appVersion < 7) {

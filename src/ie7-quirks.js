@@ -1,4 +1,8 @@
 
+// =========================================================================
+// ie7-quirks.js
+// =========================================================================
+
 function ie7Quirks() {
   
   var FONT_SIZES = "xx-small,x-small,small,medium,large,x-large,xx-large".split(",");
