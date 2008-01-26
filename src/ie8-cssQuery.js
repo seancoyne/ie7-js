@@ -19,7 +19,7 @@ IE7._isLang = function(element, code) {
 
 function _nthChild(match, args, position, last) {
   // ugly but it works...
-  if (last) last += "+1-";
+  last = /last/i.test(match) ? last + "+1-" : "";
   if (!isNaN(args)) args = "0n+" + args;
   else if (args == "even") args = "2n";
   else if (args == "odd") args = "2n+1";
