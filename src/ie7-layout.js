@@ -162,9 +162,9 @@ var layout = IE7.Layout = this;
       var width = rect.right - rect.left;
   
       if (element.currentStyle.minWidth != "none" && width <= getFixedWidth(element, element.currentStyle.minWidth)) {
-        element.runtimeStyle.width = getFixedWidth(element, element.currentStyle.minWidth);
+        element.runtimeStyle.width = element.currentStyle.minWidth;
       } else if (element.currentStyle.maxWidth != "none" && width >= getFixedWidth(element, element.currentStyle.maxWidth)) {
-        element.runtimeStyle.width = getFixedWidth(element, element.currentStyle.maxWidth);
+        element.runtimeStyle.width = element.currentStyle.maxWidth;
       } else {
         element.runtimeStyle.width = element.runtimeStyle.fixedWidth; // || "auto";
       }
