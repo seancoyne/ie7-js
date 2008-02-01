@@ -163,7 +163,7 @@ var rotater = new RegGrp({
   left:  "top",
   Right: "Bottom",
   right: "bottom",
-  X:     "Y"
+  onX:   "onY"
 });
 
 function rotate(fn) {

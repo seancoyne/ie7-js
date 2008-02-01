@@ -378,7 +378,7 @@ var Rule = IE7.Rule = Base.extend({
   },
   
   toString: function() {
-    return this.selectorText + " {" + this.cssText + "}";
+    return format("%1 {%2}", this.selectorText, this.cssText);
   }
 }, {
   CHILD: />/g,

@@ -57,7 +57,7 @@ IE7._getAttribute = function(element, name) {
     if (_EVALUATED.test(name)) {
       return element.getAttribute(name, 2);
     } else if (name == "class") {
-     return element.className.replace(/\sie7_class\d+/g, "");
+     return element.className.replace(/\sie7_\w+/g, "");
     } else if (name == "style") {
      return element.style.cssText;
     } else {

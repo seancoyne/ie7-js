@@ -179,8 +179,11 @@ var PseudoElement = IE7.PseudoElement = Rule.extend({
       content = content.join("");
       var url = content.match(URL);
       var cssText = "overflow:hidden;" + generated.cssText.replace(/'/g, '"');
+      if (target.currentStyle.styleFloat != "none") {
+        //cssText = cssText.replace(/display\s*:\s*block/, "display:inline-block");
+      }
       var position = POSITION_MAP[this.position + Number(target.canHaveChildren)];
-      var id = 'ie7_psuedo' + PseudoElement.count++;
+      var id = 'ie7_pseudo' + PseudoElement.count++;
       target.insertAdjacentHTML(position, format(PseudoElement.ANON, this.className, id, cssText, url ? "" : content));
       if (url) {
         var pseudoElement = document.getElementById(id);
@@ -197,7 +200,7 @@ var PseudoElement = IE7.PseudoElement = Rule.extend({
       this.create(this.match[i]);
     }
   },
-  
+
   toString: function() {
     return "." + this.className + "{display:inline}";
   }

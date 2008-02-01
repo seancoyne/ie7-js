@@ -11,10 +11,7 @@ IE7.CSS.addFix(/opacity\s*:\s*([\d.]+)/, function(match, value) {
 var IMAGE = /^image/i;
 IE7.HTML.addRecalc("object", function(element) {
   if (IMAGE.test(element.type)) {
-    element.body.style.margin = "0";
-    element.body.style.padding = "0";
-    element.body.style.border = "none";
-    element.body.style.overflow = "hidden";
+    element.body.style.cssText = "margin:0;padding:0;border:none;overflow:hidden";
     return element;
   }
 });
