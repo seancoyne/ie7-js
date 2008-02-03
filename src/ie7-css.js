@@ -40,7 +40,7 @@ IE7.CSS = new (Fix.extend({ // single instance
     var complex = appVersion < 7 ? ["\\[[^\\]]+\\]|[^\\s(\\[]+\\s*[+~]"] : [CLASS];
     var complexRule = complex.concat();
     if (pseudoClasses) complexRule.push(":(" + pseudoClasses + ")");
-    Rule.COMPLEX = new RegExp(complexRule.join("|") || NONE, "i");
+    Rule.COMPLEX = new RegExp(complexRule.join("|") || NONE, "ig");
     if (this.pseudoClasses) complex.push(":(" + this.pseudoClasses + ")");
     DynamicRule.COMPLEX = new RegExp(complex.join("|") || NONE, "i");
     DynamicRule.MATCH = new RegExp(dynamicPseudoClasses ? "(.*):(" + dynamicPseudoClasses + ")(.*)" : NONE, "i");
@@ -127,8 +127,9 @@ IE7.CSS = new (Fix.extend({ // single instance
     // loop through all rules
     for (i = start; i < stop; i++) {
       rule = rules[i];
+      var cssText = rule.style.cssText;
       // search for the "ie7_recalc" flag (there may be more than one)
-      if (rule && (calcs = rule.style.cssText.match(RECALCS))) {
+      if (rule && (calcs = cssText.match(RECALCS))) {
         // use the selector text to query the document
         elements = cssQuery(rule.selectorText);
         // if there are matching elements then loop
@@ -143,7 +144,7 @@ IE7.CSS = new (Fix.extend({ // single instance
           calc = IE7.CSS.recalcs[id.slice(10)][2];
           for (k = 0; (element = elements[k]); k++) {
             // apply the fix
-            if (element.currentStyle[id]) calc(element);
+            if (element.currentStyle[id]) calc(element, cssText);
           }
         }
       }
@@ -487,3 +488,17 @@ if (appVersion < 7) {
         Hover.unregister(instances[i]);
   });
 }
+
+// -----------------------------------------------------------------------
+// propertyName: inherit;
+// -----------------------------------------------------------------------
+
+IE7.CSS.addRecalc("[\\w-]+", "inherit", function(element, cssText) {
+  var inherited = cssText.match(/[\w-]+\s*:\s*inherit/g);
+  for (var i = 0; i < inherited.length; i++) {
+    var propertyName = inherited[i].replace(/ie7\-|\s*:\s*inherit/g, "").replace(/\-([a-z])/g, function(match, chr) {
+      return chr.toUpperCase()
+    });
+    element.runtimeStyle[propertyName] = element.parentElement.currentStyle[propertyName];
+  }
+});
