@@ -32,7 +32,7 @@
 (function() {
 
 IE7 = {
-  toString: function(){return "IE7 version 2.0 (beta2)"}
+  toString: function(){return "IE7 version 2.0 (beta3)"}
 };
 var appVersion = IE7.appVersion = navigator.appVersion.match(/MSIE (\d\.\d)/)[1];
 
