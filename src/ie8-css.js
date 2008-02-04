@@ -13,6 +13,22 @@ IE7.CSS.pseudoClasses += "before|after|last\\-child|only\\-child|empty|root|" +
 encoder.add(/::/, ":");
 
 // -----------------------------------------------------------------------
+// propertyName: inherit;
+// -----------------------------------------------------------------------
+
+IE7.CSS.addRecalc("[\\w-]+", "inherit", function(element, cssText) {
+  if (element.parentElement) {
+    var inherited = cssText.match(/[\w-]+\s*:\s*inherit/g);
+    for (var i = 0; i < inherited.length; i++) {
+      var propertyName = inherited[i].replace(/ie7\-|\s*:\s*inherit/g, "").replace(/\-([a-z])/g, function(match, chr) {
+        return chr.toUpperCase()
+      });
+      element.runtimeStyle[propertyName] = element.parentElement.currentStyle[propertyName];
+    }
+  }
+});
+
+// -----------------------------------------------------------------------
 // dynamic pseudo-classes
 // -----------------------------------------------------------------------
 

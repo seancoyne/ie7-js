@@ -39,7 +39,7 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
 (function() {
 
 IE7 = {
-  toString: function(){return "IE7 version 2.0 (beta2)"}
+  toString: function(){return "IE7 version 2.0 (beta4)"}
 };
 var appVersion = IE7.appVersion = navigator.appVersion.match(/MSIE (\d\.\d)/)[1];
 

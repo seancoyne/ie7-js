@@ -488,17 +488,3 @@ if (appVersion < 7) {
         Hover.unregister(instances[i]);
   });
 }
-
-// -----------------------------------------------------------------------
-// propertyName: inherit;
-// -----------------------------------------------------------------------
-
-IE7.CSS.addRecalc("[\\w-]+", "inherit", function(element, cssText) {
-  var inherited = cssText.match(/[\w-]+\s*:\s*inherit/g);
-  for (var i = 0; i < inherited.length; i++) {
-    var propertyName = inherited[i].replace(/ie7\-|\s*:\s*inherit/g, "").replace(/\-([a-z])/g, function(match, chr) {
-      return chr.toUpperCase()
-    });
-    element.runtimeStyle[propertyName] = element.parentElement.currentStyle[propertyName];
-  }
-});
