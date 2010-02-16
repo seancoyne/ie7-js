@@ -39,98 +39,206 @@ Base.prototype.extend = function(source) {
   return extend(this, source);
 };
 
+
 // A collection of regular expressions and their associated replacement values.
 // A Base class for creating parsers.
 
-var _HASH   = "#";
-var _KEYS   = "~";
+var HASH     = "#";
+var ITEMS    = "#";
+var KEYS     = ".";
+var COMPILED = "/";
 
-var _RG_ESCAPE_CHARS    = /\\./g;
-var _RG_ESCAPE_BRACKETS = /\(\?[:=!]|\[[^\]]+\]/g;
-var _RG_BRACKETS        = /\(/g;
+var REGGRP_BACK_REF        = /\\(\d+)/g,
+    REGGRP_ESCAPE_COUNT    = /\[(\\.|[^\]\\])+\]|\\.|\(\?/g,
+    REGGRP_PAREN           = /\(/g,
+    REGGRP_LOOKUP          = /\$(\d+)/,
+    REGGRP_LOOKUP_SIMPLE   = /^\$\d+$/,
+    REGGRP_LOOKUPS         = /(\[(\\.|[^\]\\])+\]|\\.|\(\?)|\(/g,
+    REGGRP_DICT_ENTRY      = /^<#\w+>$/,
+    REGGRP_DICT_ENTRIES    = /<#(\w+)>/g;
 
 var RegGrp = Base.extend({
   constructor: function(values) {
-    this[_KEYS] = [];
+    this[KEYS] = [];
+    this[ITEMS] = {};
     this.merge(values);
   },
 
-  exec: function(string) {
-    var items = this, keys = this[_KEYS];    
-    return String(string).replace(new RegExp(this, this.ignoreCase ? "gi" : "g"), function() {
-      var item, offset = 1, i = 0;
-      // Loop through the RegGrp items.
-      while ((item = items[_HASH + keys[i++]])) {
-        var next = offset + item.length + 1;
-        if (arguments[offset]) { // do we have a result?
-          var replacement = item.replacement;
-          switch (typeof replacement) {
-            case "function":
-              return replacement.apply(items, _slice.call(arguments, offset, next));
-            case "number":
-              return arguments[offset + replacement];
-            default:
-              return replacement;
-          }
-        }
-        offset = next;
-      }
-    });
-  },
+  //dictionary: null,
+  //ignoreCase: false,
 
   add: function(expression, replacement) {
+    delete this[COMPILED];
     if (expression instanceof RegExp) {
       expression = expression.source;
     }
-    if (!this[_HASH + expression]) this[_KEYS].push(String(expression));
-    this[_HASH + expression] = new RegGrp.Item(expression, replacement);
+    if (!this[HASH + expression]) this[KEYS].push(String(expression));
+    return this[ITEMS][HASH + expression] = new RegGrp.Item(expression, replacement, this);
+  },
+
+  compile: function(recompile) {
+    if (recompile || !this[COMPILED]) {
+      this[COMPILED] = new RegExp(this, this.ignoreCase ? "gi" : "g");
+    }
+    return this[COMPILED];
   },
 
   merge: function(values) {
     for (var i in values) this.add(i, values[i]);
   },
 
+  exec: function(string) {
+    var group = this,
+        patterns = group[KEYS],
+        items = group[ITEMS], item;
+    var result = this.compile(true).exec(string);
+    if (result) {
+      // Loop through the RegGrp items.
+      var i = 0, offset = 1;
+      while ((item = items[HASH + patterns[i++]])) {
+        var next = offset + item.length + 1;
+        if (result[offset]) { // do we have a result?
+          if (item.replacement === 0) {
+            return group.exec(string);
+          } else {
+            var args = result.slice(offset, next), j = args.length;
+            while (--j) args[j] = args[j] || ""; // some platforms return null/undefined for non-matching sub-expressions
+            args[0] = {match: args[0], item: item};
+            return args;
+          }
+        }
+        offset = next;
+      }
+    }
+    return null;
+  },
+
+  parse: function(string) {
+    string += ""; // type safe
+    var group = this,
+        patterns = group[KEYS],
+        items = group[ITEMS];
+    return string.replace(this.compile(), function(match) {
+      var args = [], item, offset = 1, i = arguments.length;
+      while (--i) args[i] = arguments[i] || ""; // some platforms return null/undefined for non-matching sub-expressions
+      // Loop through the RegGrp items.
+      while ((item = items[HASH + patterns[i++]])) {
+        var next = offset + item.length + 1;
+        if (args[offset]) { // do we have a result?
+          var replacement = item.replacement;
+          switch (typeof replacement) {
+            case "function":
+              return replacement.apply(group, args.slice(offset, next));
+            case "number":
+              return args[offset + replacement];
+            default:
+              return replacement;
+          }
+        }
+        offset = next;
+      }
+      return match;
+    });
+  },
+
   toString: function() {
-    // back references not supported in simple RegGrp
-    return "(" + this[_KEYS].join(")|(") + ")";
+    var strings = [],
+        keys = this[KEYS],
+        items = this[ITEMS], item;
+    for (var i = 0; item = items[HASH + keys[i]]; i++) {
+      strings[i] = item.source;
+    }
+    return "(" + strings.join(")|(") + ")";
   }
 }, {
-  IGNORE: "$0",
+  IGNORE: null, // a null replacement value means that there is no replacement.
 
   Item: Base.extend({
-    constructor: function(expression, replacement) {
-      expression = expression instanceof RegExp ? expression.source : String(expression);
+    constructor: function(source, replacement, owner) {
+      var length = source.indexOf("(") === -1 ? 0 : RegGrp.count(source);
 
-      if (typeof replacement == "number") replacement = String(replacement);
-      else if (replacement == null) replacement = "";
-
-      // does the pattern use sub-expressions?
-      if (typeof replacement == "string" && /\$(\d+)/.test(replacement)) {
-        // a simple lookup? (e.g. "$2")
-        if (/^\$\d+$/.test(replacement)) {
-          // store the index (used for fast retrieval of matched strings)
-          replacement = parseInt(replacement.slice(1));
-        } else { // a complicated lookup (e.g. "Hello $2 $1")
-          // build a function to do the lookup
-          var Q = /'/.test(replacement.replace(/\\./g, "")) ? '"' : "'";
-          replacement = replacement.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\$(\d+)/g, Q +
-            "+(arguments[$1]||" + Q+Q + ")+" + Q);
-          replacement = new Function("return " + Q + replacement.replace(/(['"])\1\+(.*)\+\1\1$/, "$1") + Q);
+      var dictionary = owner.dictionary;
+      if (dictionary && source.indexOf("<#") !== -1) {
+        if (REGGRP_DICT_ENTRY.test(source)) {
+          var entry = dictionary[ITEMS][HASH + source.slice(2, -1)];
+          source = entry.replacement;
+          length = entry._length;
+        } else {
+          source = dictionary.parse(source);
         }
       }
 
-      this.length = RegGrp.count(expression);
+      if (typeof replacement == "number") replacement = String(replacement);
+      else if (replacement == null) replacement = 0;
+
+      // Does the expression use sub-expression lookups?
+      if (typeof replacement == "string" && REGGRP_LOOKUP.test(replacement)) {
+        if (REGGRP_LOOKUP_SIMPLE.test(replacement)) { // A simple lookup? (e.g. "$2").
+          // Store the index (used for fast retrieval of matched strings).
+          var index = replacement.slice(1) - 0;
+          if (index && index <= length) replacement = index;
+        } else {
+          // A complicated lookup (e.g. "Hello $2 $1.").
+          var lookup = replacement, regexp;
+          replacement = function(match) {
+            if (!regexp) {
+              regexp = new RegExp(source, "g" + (this.ignoreCase ? "i": ""));
+            }
+            return match.replace(regexp, lookup);
+          };
+        }
+      }
+
+      this.length = length;
+      this.source = String(source);
       this.replacement = replacement;
-      this.toString = K(expression);
     }
   }),
 
   count: function(expression) {
-    // Count the number of sub-expressions in a RegExp/RegGrp.Item.
-    expression = String(expression).replace(_RG_ESCAPE_CHARS, "").replace(_RG_ESCAPE_BRACKETS, "");
-    return match(expression, _RG_BRACKETS).length;
+    return (String(expression).replace(REGGRP_ESCAPE_COUNT, "").match(REGGRP_PAREN) || "").length;
   }
 });
+
+var Dictionary = RegGrp.extend({
+  parse: function(phrase) {
+    // Prevent sub-expressions in dictionary entries from capturing.
+    var entries = this[ITEMS];
+    return phrase.replace(REGGRP_DICT_ENTRIES, function(match, entry) {
+      entry = entries[HASH + entry];
+      return entry ? entry._nonCapturing : match;
+    });
+  },
+
+  add: function(expression, replacement) {
+    // Get the underlying replacement value.
+    if (replacement instanceof RegExp) {
+      replacement = replacement.source;
+    }
+    // Translate the replacement.
+    // The result is the original replacement recursively parsed by this dictionary.
+    var nonCapturing = replacement.replace(REGGRP_LOOKUPS, _nonCapture);
+    if (replacement.indexOf("(") !== -1) {
+      var realLength = RegGrp.count(replacement);
+    }
+    if (replacement.indexOf("<#") !== -1) {
+      replacement = this.parse(replacement);
+      nonCapturing = this.parse(nonCapturing);
+    }
+    var item = this.base(expression, replacement);
+    item._nonCapturing = nonCapturing;
+    item._length = realLength || item.length; // underlying number of sub-groups
+    return item;
+  },
+
+  toString: function() {
+    return "(<#" + this[PATTERNS].join(">)|(<#") + ">)";
+  }
+});
+
+function _nonCapture(match, escaped) {
+  return escaped || "(?:"; // non-capturing
+};
 
 // =========================================================================
 // lang/extend.js
@@ -152,7 +260,7 @@ function extend(object, source) { // or extend(object, key, value)
       }
     }
     // Copy each of the source object's properties to the target object.
-    for (key in source) if (proto[key] === undefined) {
+    for (key in source) if (typeof proto[key] == "undefined") {
       var value = source[key];
       // Check for method overriding.
       if (object[key] && typeof value == "function" && _BASE.test(value)) {

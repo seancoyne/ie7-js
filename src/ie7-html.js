@@ -37,7 +37,7 @@ IE7.HTML = new (Fix.extend({ // single instance
       var key = Math.pow(2, i);
       for (var j = 0; (element = match[j]); j++) {
         var uniqueID = element.uniqueID;
-        if ((this.fixed[uniqueID] & key) == 0) {
+        if ((this.fixed[uniqueID] & key) === 0) {
           element = recalc(element) || element;
           this.fixed[uniqueID] |= key;
         }
@@ -48,8 +48,6 @@ IE7.HTML = new (Fix.extend({ // single instance
 
 if (appVersion < 7) {  
   // provide support for the <abbr> tag.
-  //  this is a proper fix, it preserves the DOM structure and
-  //  <abbr> elements report the correct tagName & namespace prefix
   document.createElement("abbr");
   
   // bind to the first child control

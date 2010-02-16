@@ -16,7 +16,7 @@
   if (!IE7.loaded) return;
   
   // remove all IE7 classes from an element
-  CLASSES = /\sie7_class\d+/g;
+  var CLASSES = /\sie7_class\d+/g;
   
   IE7.CSS.extend({
     // store for elements that have style properties calculated

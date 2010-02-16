@@ -3,12 +3,10 @@ header('Content-Type: application/x-javascript');
 header('Expires: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 header('Cache-Control: no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-
-print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
 ?>
 /*
-  IE7/IE8.js - copyright 2004-2008, Dean Edwards
-  http://dean.edwards.name/IE7/
+  IE7/IE8.js - copyright 2004-2010, Dean Edwards
+  http://code.google.com/p/ie7-js/
   http://www.opensource.org/licenses/mit-license.php
 */
 
@@ -21,32 +19,37 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
   Bill Edney, Kevin Newman, James Crompton, Matthew Mastracci,
   Doug Wright, Richard York, Kenneth Kolano, MegaZone,
   Thomas Verelst, Mark 'Tarquin' Wilton-Jones, Rainer Åhlfors,
-  David Zulaica, Ken Kolano, Kevin Newman
+  David Zulaica, Ken Kolano, Kevin Newman, Sjoerd Visscher,
+  Ingo Chao
 */
 
-// =======================================================================
-// TO DO
-// =======================================================================
+<?php
+print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
+?>
 
-// PNG - unclickable content
+(function(window, document) {
 
-// =======================================================================
-// TEST/BUGGY
-// =======================================================================
-
-// hr{margin:1em auto} (doesn't look right in IE5)
-
-(function() {
-
-IE7 = {
-  toString: function(){return "IE7 version 2.0 (beta4)"}
+var IE7 = window.IE7 = {
+  version: "2.1 (rc1)",
+  toString: K("[IE7]")
 };
-var appVersion = IE7.appVersion = navigator.appVersion.match(/MSIE (\d\.\d)/)[1];
+<?php
+if (preg_match('/ie9/', $_SERVER['QUERY_STRING'])) {
+  $compat = 9;
+} else if (preg_match('/ie8/', $_SERVER['QUERY_STRING'])) {
+  $compat = 8;
+} else {
+  $compat = 7;
+}
+?>
+IE7.compat = <?php echo $compat ?>;
+var appVersion = IE7.appVersion = navigator.appVersion.match(/MSIE (\d\.\d)/)[1] - 0;
 
-if (/ie7_off/.test(top.location.search) || appVersion < 5) return;
+if (/ie7_off/.test(top.location.search) || appVersion < 5.5 || appVersion >= IE7.compat) return;
+
+var MSIE5 = appVersion < 6;
 
 var Undefined = K();
-var quirksMode = document.compatMode != "CSS1Compat";
 var documentElement = document.documentElement, body, viewport;
 var ANON = "!";
 var HEADER = ":link{ie7-link:link}:visited{ie7-link:visited}";
@@ -66,42 +69,33 @@ function getPath(href, path) {
   return href.slice(0, href.lastIndexOf("/") + 1);
 };
 
-// get the path to this script
+// Get the path to this script
 var script = document.scripts[document.scripts.length - 1];
 var path = getPath(script.src);
 
-// we'll use microsoft's http request object to load external files
+// Use microsoft's http request object to load external files
 try {
   var httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
-} catch (e) {
+} catch (ex) {
   // ActiveX disabled
 }
 
 var fileCache = {};
 function loadFile(href, path) {
-try {
-  href = makePath(href, path);
-  if (!fileCache[href]) {
-    // easy to load a file huh?
-    httpRequest.open("GET", href, false);
-    httpRequest.send();
-    if (httpRequest.status == 0 || httpRequest.status == 200) {
-      fileCache[href] = httpRequest.responseText;
+  try {
+    href = makePath(href, path);
+    if (!fileCache[href]) {
+      httpRequest.open("GET", href, false);
+      httpRequest.send();
+      if (httpRequest.status == 0 || httpRequest.status == 200) {
+        fileCache[href] = httpRequest.responseText;
+      }
     }
+  } catch (ex) {
+    // ignore errors
   }
-} catch (e) {
-  // ignore errors
-} finally {
   return fileCache[href] || "";
-}};
-
-// -----------------------------------------------------------------------
-// IE5.0 compatibility
-// -----------------------------------------------------------------------
-
-<?php 
-include("ie7-ie5.js");
-?>
+};
 
 // -----------------------------------------------------------------------
 // OO support
@@ -115,12 +109,12 @@ include("ie7-ie5.js");
 
 var Parser = RegGrp.extend({ignoreCase: true});
 
-var ENCODED = /\x01(\d+)/g,
-    QUOTES  = /'/g, 
-    STRING = /^\x01/,
-    UNICODE = /\\([\da-fA-F]{1,4})/g;
+var SINGLE_QUOTES       = /'/g,
+    ESCAPED             = /'(\d+)'/g,
+    ESCAPE              = /\\/g,
+    UNESCAPE            = /\\([nrtf'"])/g;
 
-var _strings = [];
+var strings = [];
 
 var encoder = new Parser({
   // comments
@@ -135,24 +129,31 @@ var encoder = new Parser({
   "\\s+": " "
 });
 
-function encode(cssText) {
-  return encoder.exec(cssText);
+function encode(selector) {
+  return encoder.parse(selector).replace(UNESCAPE, "$1");
 };
 
-function decode(cssText) {
-  return cssText.replace(ENCODED, function(match, index) {
-    return _strings[index - 1];
-  });
+function decode(query) {
+  // put string values back
+  return query.replace(ESCAPED, decodeString);
 };
 
 function encodeString(string) {
-  return "\x01" + _strings.push(string.replace(UNICODE, function(match, chr) {
-    return eval("'\\u" + "0000".slice(chr.length) + chr + "'");
-  }).slice(1, -1).replace(QUOTES, "\\'"));
+  var index = strings.length;
+  strings[index] = string.slice(1, -1)
+    .replace(UNESCAPE, "$1")
+    .replace(SINGLE_QUOTES, "\\'");
+  return "'" + index + "'";
+};
+
+function decodeString(match, index) {
+  var string = strings[index];
+  if (string == null) return match;
+  return "'" + strings[index] + "'";
 };
 
 function getString(value) {
-  return STRING.test(value) ? _strings[value.slice(1) - 1] : value;
+  return value.indexOf("'") === 0 ? strings[value.slice(1, - 1)] : value;
 };
 
 // clone a "width" function to create a "height" function
@@ -167,7 +168,7 @@ var rotater = new RegGrp({
 });
 
 function rotate(fn) {
-  return rotater.exec(fn);
+  return rotater.parse(fn);
 };
 
 // -----------------------------------------------------------------------
@@ -190,11 +191,12 @@ function addEventHandler(element, type, handler) {
 
 // remove an event handler assigned to an element by IE7
 function removeEventHandler(element, type, handler) {
-try {
-  element.detachEvent(type, handler);
-} catch (ignore) {
-  // write a letter of complaint to microsoft..
-}};
+  try {
+    element.detachEvent(type, handler);
+  } catch (ex) {
+    // write a letter of complaint to microsoft..
+  }
+};
 
 // remove event handlers (they eat memory)
 addEventHandler(window, "onunload", function() {
@@ -285,9 +287,8 @@ function setOverrideStyle(element, propertyName, value) {
   element.runtimeStyle[propertyName] = value;
 };
 
-// create a temporary element which is used to inherit styles
-//  from the target element. the temporary element can be resized
-//  to determine pixel widths/heights
+// Create a temporary element which is used to inherit styles
+// from the target element.
 function createTempElement(tagName) {
   var element = document.createElement(tagName || "object");
   element.style.cssText = "position:absolute;padding:0;display:block;border:none;clip:rect(0 0 0 0);left:-9999";
@@ -296,7 +297,6 @@ function createTempElement(tagName) {
 };
 
 <?php
-include("ie7-cssQuery.js");
 include('ie7-css.js');
 include('ie7-html.js');
 include('ie7-layout.js');
@@ -304,13 +304,18 @@ include('ie7-graphics.js');
 include('ie7-fixed.js');
 include('ie7-overflow.js');
 include('ie7-quirks.js');
-if (preg_match('/ie8/', $_SERVER['QUERY_STRING'])) {
-  include('ie8-cssQuery.js');
+if ($compat >= 8) {
   include('ie8-css.js');
   include('ie8-html.js');
   include('ie8-layout.js');
-  include('ie8-graphics.js');
+  if ($compat == 9) {
+    include('ie9-css.js');
+    include('ie9-html.js');
+    include('ie9-layout.js');
+    include('ie9-graphics.js');
+  }
 }
+include("cssQuery.js");
 ?>
 
 // -----------------------------------------------------------------------
@@ -322,28 +327,33 @@ IE7.loaded = true;
 (function() {
   try {
     // http://javascript.nwbox.com/IEContentLoaded/
+    if (!document.body) throw "continue";
     documentElement.doScroll("left");
-  } catch (e) {
+  } catch (ex) {
     setTimeout(arguments.callee, 1);
     return;
   }
   // execute the inner text of the IE7 script
   try {
     eval(script.innerHTML);
-  } catch (e) {
+  } catch (ex) {
     // ignore errors
   }
-  PNG = new RegExp(rescape(typeof IE7_PNG_SUFFIX == "string" ? IE7_PNG_SUFFIX : "-trans.png") + "$", "i");
+  if (typeof IE7_PNG_SUFFIX == "object") {
+    PNG = IE7_PNG_SUFFIX;
+  } else {
+    PNG = new RegExp(rescape(window.IE7_PNG_SUFFIX || "-trans.png") + "(\\?.*)?$", "i");
+  }
 
   // frequently used references
   body = document.body;
-  viewport = quirksMode ? body : documentElement;
+  viewport = MSIE5 ? body : documentElement;
 
   // classes
   body.className += " ie7_body";
   documentElement.className += " ie7_html";
 
-  if (quirksMode) ie7Quirks();
+  if (MSIE5) ie7Quirks();
 
   IE7.CSS.init();
   IE7.HTML.init();
@@ -354,5 +364,4 @@ IE7.loaded = true;
   IE7.recalc();
 })();
 
-
-})();
+})(this, document);

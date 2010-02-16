@@ -46,35 +46,35 @@ if (appVersion < 5.5) {
   };
   
   var ns = this;
-  Function.prototype.apply = function(o, a) {
-    if (o === undefined) o = ns;
-    else if (o == null) o = window;
-    else if (typeof o == "string") o = new String(o);
-    else if (typeof o == "number") o = new Number(o);
-    else if (typeof o == "boolean") o = new Boolean(o);
-    if (arguments.length == 1) a = [];
-    else if (a[0] && a[0].writeln) a[0] = a[0].documentElement.document || a[0];
-    var $ = "#ie7_apply", r;
-    o[$] = this;
-    switch (a.length) { // unroll for speed
-      case 0: r = o[$](); break;
-      case 1: r = o[$](a[0]); break;
-      case 2: r = o[$](a[0],a[1]); break;
-      case 3: r = o[$](a[0],a[1],a[2]); break;
-      case 4: r = o[$](a[0],a[1],a[2],a[3]); break;
-      case 5: r = o[$](a[0],a[1],a[2],a[3],a[4]); break;
+  Function.prototype.apply = function(_no_shrink_) {
+    var a = arguments[0], b = arguments[1], c = "*apply", d;
+    if (typeof a == "undefined") a = ns;
+    else if (a == null) a = window;
+    else if (typeof a == "string") a = new String(a);
+    else if (typeof a == "number") a = new Number(a);
+    else if (typeof a == "boolean") a = new Boolean(a);
+    if (arguments.length == 1) b = [];
+    else if (b[0] && b[0].writeln) b[0] = b[0].documentElement.document || b[0];
+    a[c] = this;
+    switch (b.length) { // unroll for speed
+      case 0: d = a[c](); break;
+      case 1: d = a[c](b[0]); break;
+      case 2: d = a[c](b[0],b[1]); break;
+      case 3: d = a[c](b[0],b[1],b[2]); break;
+      case 4: d = a[c](b[0],b[1],b[2],b[3]); break;
+      case 5: d = a[c](b[0],b[1],b[2],b[3],b[4]); break;
       default:
-        var b = [], i = a.length - 1;
-        do b[i] = "a[" + i + "]"; while (i--);
-        eval("r=o[$](" + b + ")");
+        var args = [], i = b.length - 1;
+        do args[i] = "b[" + i + "]"; while (i--);
+        eval("d=a[c](" + args + ")");
     }
-    if (typeof o.valueOf == "function") { // not a COM object
-      delete o[$];
+    if (typeof a.valueOf == "function") { // not a COM object
+      delete a[c];
     } else {
-      o[$] = undefined;
-      if (r && r.writeln) r = r.documentElement.document || r;
+      a[c] = undefined;
+      if (d && d.writeln) d = d.documentElement.document || d;
     }
-    return r;
+    return d;
   };
   
   Function.prototype.call = function(o) {
