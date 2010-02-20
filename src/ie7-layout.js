@@ -6,7 +6,7 @@
 var NUMERIC = "[.\\d]";
 
 (function() {
-  var layout = IE7.Layout = this;
+  var layout = IE7.Layout = {};
 
   // big, ugly box-model hack + min/max stuff
 
@@ -74,7 +74,7 @@ var NUMERIC = "[.\\d]";
   var UNIT = /^[.\d][\w]*$/, AUTO = /^(auto|0cm)$/;
 
   var apply = {};
-  IE7.Layout.borderBox = function(element){
+  layout.borderBox = function(element){
     apply.Width(element);
     apply.Height(element);
   };
@@ -160,10 +160,10 @@ var NUMERIC = "[.\\d]";
       }
       if (element.currentStyle.minWidth !== "none" && width < getFixedWidth(element, element.currentStyle.minWidth)) {
         element.runtimeStyle.width = element.currentStyle.minWidth;
-      } else if (element.currentStyle.maxWidth !== "none" && width > getFixedWidth(element, element.currentStyle.maxWidth)) {
+      } else if (element.currentStyle.maxWidth !== "none" && width >= getFixedWidth(element, element.currentStyle.maxWidth)) {
         element.runtimeStyle.width = element.currentStyle.maxWidth;
       } else {
-        element.runtimeStyle.width = element.runtimeStyle.fixedWidth; // || "auto";
+        element.runtimeStyle.width = element.runtimeStyle.fixedWidth;
       }
     };
 
@@ -177,10 +177,10 @@ var NUMERIC = "[.\\d]";
         getDefinedStyle(element, "right") !== "auto" &&
         AUTO.test(getDefinedStyle(element, "width")))) {
           resizeRight(element);
-          IE7.Layout.boxSizing(element);
+          layout.boxSizing(element);
       }
     };
-    IE7.Layout.fixRight = fixRight;
+    layout.fixRight = fixRight;
 
     function resizeRight(element) {
       var left = getPixelWidth(element, element.runtimeStyle._left || element.currentStyle.left);
@@ -249,6 +249,6 @@ var NUMERIC = "[.\\d]";
   
   if (appVersion < 7) {
     IE7.CSS.addRecalc("min-width", NUMERIC, layout.minWidth);
-    IE7.CSS.addFix(/\bmin-height\s*/, "_height");
+    IE7.CSS.addFix(/\bmin-height\s*/, "height");
   }
 })();

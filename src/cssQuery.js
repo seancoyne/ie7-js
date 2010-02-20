@@ -1,4 +1,6 @@
 
+var MATCHER;
+
 var cssQuery = (function() {
   var CONTEXT = /^[>+~]/;
   
@@ -14,11 +16,11 @@ var cssQuery = (function() {
       context = context.parentNode;
       selector = "*" + selector;
     }
-    //try {
+    try {
       return selectQuery.create(selector, useContext)(context, single ? null : [], ref);
-    //} catch (ex) {
-    //  return single ? null : [];
-    //}
+    } catch (ex) {
+      return single ? null : [];
+    }
   };
 
   var VALID_SELECTOR = /^(\\.|[' >+~#.\[\]:*(),\w-\^|$=]|[^\x00-\xa0])+$/;
@@ -163,7 +165,7 @@ var cssQuery = (function() {
 
   var TOKEN = /\be\b/g;
 
-  var MATCHER = new CSSSelectorParser({
+  MATCHER = new CSSSelectorParser({
     "(?:(<#selector>)(<#combinator>))?(<#tag>)(<#filter>)?$": function(match, before, combinator, tag, filters) {
       var group = "";
       if (tag !== "*") {

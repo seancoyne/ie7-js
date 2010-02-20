@@ -30,7 +30,7 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
 (function(window, document) {
 
 var IE7 = window.IE7 = {
-  version: "2.1 (rc1)",
+  version: "2.1(beta1)",
   toString: K("[IE7]")
 };
 <?php
@@ -308,9 +308,9 @@ if ($compat >= 8) {
   include('ie8-css.js');
   include('ie8-html.js');
   include('ie8-layout.js');
+  include('ie8-graphics.js');
   if ($compat == 9) {
     include('ie9-css.js');
-    include('ie9-html.js');
     include('ie9-layout.js');
     include('ie9-graphics.js');
   }
