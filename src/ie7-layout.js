@@ -82,7 +82,7 @@ var NUMERIC = "[.\\d]";
   var _fixWidth = function(HEIGHT) {
     apply.Width = function(element) {
       if (!PERCENT.test(element.currentStyle.width)) _fixWidth(element);
-      collapseMargins(element);
+      if (HEIGHT) collapseMargins(element);
     };
 
     function _fixWidth(element, value) {

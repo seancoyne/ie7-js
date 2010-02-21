@@ -30,7 +30,7 @@ print("// timestamp: ".gmdate('D, d M Y H:i:s')."\r\n");
 (function(window, document) {
 
 var IE7 = window.IE7 = {
-  version: "2.1(beta1)",
+  version: "2.1(beta2)",
   toString: K("[IE7]")
 };
 <?php

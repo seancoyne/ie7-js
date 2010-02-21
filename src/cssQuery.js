@@ -33,7 +33,7 @@ var cssQuery = (function() {
 
   var IE7_CLASS_NAMES = /\sie7_\w+/g;
 
-  var USE_IFLAG      = /^(action|cite|codebase|data|dynsrc|href|longdesc|lowsrc|src|usemap|url)$/i;
+  var USE_IFLAG = /^(action|cite|codebase|data|dynsrc|href|longdesc|lowsrc|src|usemap|url)$/i;
 
   IE7._getAttribute = function(element, name) {
     if (element.getAttributeNode) {
@@ -151,7 +151,7 @@ var cssQuery = (function() {
     if (ROOT.test(selector)) constants += ",R=d.documentElement";
     if (TARGET.test(selector)) constants += ",H=d.location;H=H&&H.hash.replace('#','')";
     if (constants || selector.indexOf("#") !== -1) {
-      constants = ",t=c.nodeType,d=t===9?c:c.ownerDocument||c.document.parentWindow.document" + constants;
+      constants = ",t=c.nodeType,d=t===9?c:c.ownerDocument||(c.document||c).parentWindow.document" + constants;
     }
     return "var ii" + constants + ";";
   };

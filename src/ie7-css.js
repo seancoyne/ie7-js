@@ -16,8 +16,6 @@ var SPACE = /\s/;
 var RULE = /((?:\\.|[^{\\])+)\{((?:\\.|[^}\\])+)\}/g;
 var SELECTOR = /(?:\\.|[^,\\])+/g;
 
-//var UNKNOWN = /UNKNOWN|([:.])\w+\1/i;
-
 var styleSheets = document.styleSheets;
 
 var inheritedProperties = [];
