@@ -69,6 +69,7 @@ var cssQuery = (function() {
       BLOCKS              = /\)\{/g,
       COMMA               = /,/,
       QUOTED              = /^['"]/,
+      HEX_ESCAPE          = /\\([\da-f]{2,2})/gi,
       LAST_CHILD          = /last/i;
 
   IE7._byId = function(document, id) {
@@ -120,7 +121,7 @@ var cssQuery = (function() {
   });
 
   function normalize(selector) {
-    selector = normalizer.parse(selector)
+    selector = normalizer.parse(selector.replace(HEX_ESCAPE, "\\x$1"))
       .replace(UNESCAPE, "$1")
       .replace(IMPLIED_ASTERISK, "$1*$2");
     if (!VALID_SELECTOR.test(selector)) throwSelectorError();

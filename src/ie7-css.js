@@ -210,9 +210,11 @@ var StyleSheet = Base.extend({
   getText: function() {
     // store for style sheet text
     // parse media decalarations
-    var MEDIA = /@media\s+([^{]+?)\s*\{([^@]+\})\s*\}/gi;
-    var URL = /(url\s*\(\s*['"]?)([\w\.]+[^:\)]*['"]?\))/gi;
-    
+    var MEDIA        = /@media\s+([^{]+?)\s*\{([^@]+\})\s*\}/gi;
+    var IMPORTS      = /@import[^;\n]+/gi;
+    var TRIM_IMPORTS = /@import\s+url\s*\(\s*["']?|["']?\s*\)\s*/gi;
+    var URL          = /(url\s*\(\s*['"]?)([\w\.]+[^:\)]*['"]?\))/gi;
+
     var self = this;
     
     // Store loaded cssText URLs
@@ -232,10 +234,14 @@ var StyleSheet = Base.extend({
         // IE only allows importing style sheets three levels deep.
         // it will crash if you try to access a level below this
         if (level < 3 && styleSheet.cssText) {
+          var hrefs = styleSheet.cssText.match(IMPORTS);
           // loop through imported style sheets
-          for (var i = 0; i < styleSheet.imports.length; i++) {
+          for (var i = 0, imported; i < styleSheet.imports.length; i++) {
+            var imported = styleSheet.imports[i];
+            var href = styleSheet._href || styleSheet.href;
+            imported._href = hrefs[i].replace(TRIM_IMPORTS, "");
             // call this function recursively to get all imported style sheets
-            cssText += getCSSText(styleSheet.imports[i], getPath(styleSheet.href, path), media, level + 1);
+            cssText += getCSSText(imported, getPath(href, path), media, level + 1);
           }
         }
         // retrieve inline style or load an external style sheet
@@ -288,12 +294,13 @@ var StyleSheet = Base.extend({
     
     // Load an external style sheet
     function loadStyleSheet(styleSheet, path) {
-      var url = makePath(styleSheet.href, path);
+      var href = styleSheet._href || styleSheet.href;
+      var url = makePath(href, path);
       // If the style sheet has already loaded then don't reload it
       if (fileCache[url]) return "";
       // Load from source
       fileCache[url] = styleSheet.disabled ? "" :
-        fixUrls(IE7.CSS.getText(styleSheet, path), getPath(styleSheet.href, path));
+        fixUrls(IE7.CSS.getText(styleSheet, path), getPath(href, path));
       return fileCache[url];
     };
 
@@ -542,7 +549,7 @@ var ATTR = {
   "~=": "(' '+%1+' ').indexOf(' %2 ')!==-1",   // "[contains(concat(' ',@%1,' '),' %2 ')]",
   "|=": "%1==='%2'||%1.indexOf('%2-')===0",    // "[@%1='%2' or starts-with(@%1,'%2-')]",
   "^=": "%1.indexOf('%2')===0",                // "[starts-with(@%1,'%2')]",
-  "$=": "%1.slice(%3)==='%2'",                 // "[ends-with(@%1,'%2')]",
+  "$=": "%1.slice(-'%2'.length)==='%2'",       // "[ends-with(@%1,'%2')]",
   "*=": "%1.indexOf('%2')!==-1"                // "[contains(@%1,'%2')]"
 };
 ATTR[""] = "%1!=null";                         // "[@%1]"
@@ -557,7 +564,7 @@ var FILTER = {
       }
       attr = "(" + attr + "||'')";
     }
-    return "(" + format(ATTR[operator], attr, value, -value.length) + ")&&";
+    return "(" + format(ATTR[operator], attr, value) + ")&&";
   },
 
   "<#id>":    ID_ATTRIBUTE + "==='$1'&&",
