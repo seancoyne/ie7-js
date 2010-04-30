@@ -233,7 +233,10 @@ var StyleSheet = Base.extend({
       if (media === "all" || media === self.media) {
         // IE only allows importing style sheets three levels deep.
         // it will crash if you try to access a level below this
-        if (level < 3 && styleSheet.cssText) {
+        try {
+          var canAcess = !!styleSheet.cssText;
+        } catch (exe) {}
+        if (level < 3 && canAcess) {
           var hrefs = styleSheet.cssText.match(IMPORTS);
           // loop through imported style sheets
           for (var i = 0, imported; i < styleSheet.imports.length; i++) {
@@ -326,7 +329,14 @@ var StyleSheet = Base.extend({
   },
   
   parse: function() {
-    this.cssText = IE7.CSS.parser.parse(this.cssText);
+    var cssText = IE7.CSS.parser.parse(this.cssText);
+    
+    var declarations = "";
+    this.cssText = cssText.replace(/@charset[^;]+;|@font\-face[^\}]+\}/g, function(match) {
+      declarations += match + "\n";
+      return "";
+    });
+    this.declarations = decode(declarations);
     
     // Parse the style sheet
     var offset = IE7.CSS.rules.length;
@@ -355,7 +365,7 @@ var StyleSheet = Base.extend({
   },
   
   toString: function() {
-    return "@media " + this.media + "{" + this.cssText + "}";
+    return this.declarations + "@media " + this.media + "{" + this.cssText + "}";
   }
 });
 
@@ -524,25 +534,23 @@ var DynamicPseudoClass = Base.extend({
 // dynamic pseudo-classes
 // -----------------------------------------------------------------------
 
-if (appVersion < 7) {
-  var Hover = new DynamicPseudoClass("hover", function(element) {
-    var instance = arguments;
-    IE7.CSS.addEventHandler(element, "onmouseenter", function() {
-      Hover.register(instance);
-    });
-    IE7.CSS.addEventHandler(element, "onmouseleave", function() {
-      Hover.unregister(instance);
-    });
+var Hover = new DynamicPseudoClass("hover", function(element) {
+  var instance = arguments;
+  IE7.CSS.addEventHandler(element, "onmouseenter", function() {
+    Hover.register(instance);
   });
-  
-  // globally trap the mouseup event (thanks Martijn!)
-  addEventHandler(document, "onmouseup", function() {
-    var instances = Hover.instances;
-    for (var i in instances)
-      if (!instances[i][0].contains(event.srcElement))
-        Hover.unregister(instances[i]);
+  IE7.CSS.addEventHandler(element, "onmouseleave", function() {
+    Hover.unregister(instance);
   });
-}
+});
+
+// globally trap the mouseup event (thanks Martijn!)
+addEventHandler(document, "onmouseup", function() {
+  var instances = Hover.instances;
+  for (var i in instances)
+    if (!instances[i][0].contains(event.srcElement))
+      Hover.unregister(instances[i]);
+});
 
 var ATTR = {
   "=":  "%1==='%2'",                           // "[@%1='%2']"
@@ -573,6 +581,6 @@ var FILTER = {
 
   // PSEDUO
   ":first-child":     "!" + PREVIOUS_SIBLING + "&&",
-  ":link":           "e.href&&(e.nodeName==='A'||e.nodeName==='AREA')&&",
-  ":visited":        "false&&" // not implemented (security)
+  ":link":           "e.currentStyle['ie7-link']=='link'&&",
+  ":visited":        "e.currentStyle['ie7-link']=='visited'&&"
 };
