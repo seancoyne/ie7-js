@@ -11,7 +11,7 @@ Upgrade MSIE5.5-6 to be compatible with MSIE7.
 
 ```html
 <!--[if lt IE 7]>
-<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script>
+<script src="https://seancoyne.github.io/ie7-js/lib/IE7.js"></script>
 <![endif]-->
 ```
 
@@ -20,7 +20,7 @@ Upgrade MSIE5.5-7 to be compatible with MSIE8.
 
 ```html
 <!--[if lt IE 8]>
-<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+<script src="https://seancoyne.github.io/ie7-js/lib/IE8.js"></script>
 <![endif]-->
 ```
 
@@ -31,7 +31,7 @@ Upgrade MSIE5.5-8 to be compatible with modern browsers.
 
 ```html
 <!--[if lt IE 9]>
-<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+<script src="https://seancoyne.github.io/ie7-js/lib/IE9.js"></script>
 <![endif]-->
 ```
 
