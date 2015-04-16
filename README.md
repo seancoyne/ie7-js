@@ -81,4 +81,5 @@ Here is a nice introduction:
 http://www.charlescooke.me.uk/web/lab_notes/ie7_script.html
 
 ### Demo
-http://ie7-js.googlecode.com/svn/test/index.html
+
+https://seancoyne.github.io/ie7-js/
