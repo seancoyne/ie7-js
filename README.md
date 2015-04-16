@@ -69,11 +69,8 @@ div.example {
 Unfortunately, the transparent background image cannot be tiled (repeated) using background-repeat. Nor can it be positioned using background-position.
 
 ## Download
-You may link directly to these files if you wish:
 
-http://ie7-js.googlecode.com/svn/version/
-
-Or go to the downloads section to download the current version.
+Go to the [releases](releases) section to download the current version.
 
 ### Getting Started
 Here is a nice introduction:
