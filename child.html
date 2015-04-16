@@ -4,29 +4,29 @@
  <title>IE7 {CSS2: auto}</title>
 
  <!-- Compliance patch for Microsoft browsers -->
- <!--[if lt IE 9]><script src="../trunk/lib/IE9.js"></script><![endif]-->
+ <!--[if lt IE 9]><script src="lib/IE9.js"></script><![endif]-->
 
  <style>
 
-  div {
+	div {
 
-   border: silver 1px solid;
-   margin: 0.3em;
-   padding: 0.3em;
+	 border: silver 1px solid;
+	 margin: 0.3em;
+	 padding: 0.3em;
 
-  }
+	}
 
-  .parent {
+	.parent {
 
-   margin: 1em 0.3em 0.3em;
-   
-  }
+	 margin: 1em 0.3em 0.3em;
+	 
+	}
 
-  .parent > .child {
+	.parent > .child {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
 
  </style>
 </head>
@@ -35,12 +35,12 @@
  <h2>parent &gt; child</h2>
 
  <div class="parent">Parent
-  <div class="child">Child</div>
+	<div class="child">Child</div>
  </div>
  <div class="parent">Parent
-  <div class="baby-sitter">Baby-sitter
-   <div class="child">Child</div>
-  </div>
+	<div class="baby-sitter">Baby-sitter
+	 <div class="child">Child</div>
+	</div>
  </div>
 
  <p>&lt;&nbsp;<a href="index.html">back</a></p>

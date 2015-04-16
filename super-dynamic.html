@@ -4,72 +4,72 @@
  <title>IE7 {CSS2: auto}</title>
 
  <!-- Compliance patch for Microsoft browsers -->
- <!--[if lt IE 9]><script src="../trunk/lib/IE9.js"></script><![endif]-->
+ <!--[if lt IE 9]><script src="lib/IE9.js"></script><![endif]-->
 
  <style>
 
-  div {
+	div {
 
-   background: silver;
-   width: 200px;
+	 background: silver;
+	 width: 200px;
 
-  }
+	}
 
-  #test1:hover > p {
+	#test1:hover > p {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
 
-  #test2 p:hover + p {
+	#test2 p:hover + p {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
 
-  input {
+	input {
 
-   background: red;
+	 background: red;
 
-  }
+	}
 
-  input + input {
+	input + input {
 
-   background: orange;
+	 background: orange;
 
-  }
+	}
 
-  input + input + input {
+	input + input + input {
 
-   background: lime;
+	 background: lime;
 
-  }
+	}
 
-  #test3 input:focus + input {
+	#test3 input:focus + input {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
 
-  #test4 p:hover ~ p {
+	#test4 p:hover ~ p {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
 
-  code {
+	code {
 
-   background-color: #eee;
+	 background-color: #eee;
 
-  }
+	}
 
-  code.box {
+	code.box {
 
-   display: block;
-   margin: 1em 0em;
-   padding: 1em;
+	 display: block;
+	 margin: 1em 0em;
+	 padding: 1em;
 
-  }
+	}
 
  </style>
 </head>
@@ -78,73 +78,73 @@
  <h2>Dynamic Pseudo-Classes</h2>
 
  <p>The examples below seem slightly confusing. This is because an element&#8217;s
-    style is influenced by dynamic pseudo-classes attached to adjacent elements.
-    View the source of this document to fully understand these selectors.</p>
+		style is influenced by dynamic pseudo-classes attached to adjacent elements.
+		View the source of this document to fully understand these selectors.</p>
 
  <hr>
 
  <code class="box">
-  #test1:hover > p {
+	#test1:hover > p {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
  </code>
 
  <div id="test1">
-  <p>Here is a paragraph.</p>
-  <p>And another.</p>
+	<p>Here is a paragraph.</p>
+	<p>And another.</p>
  </div>
 
  <hr>
 
  <code class="box">
-  #test2 p:hover + p {
+	#test2 p:hover + p {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
  </code>
 
  <div id="test2">
-  <p>Paragraph 1.</p>
-  <p>Paragraph 2.</p>
-  <p>Paragraph 3.</p>
+	<p>Paragraph 1.</p>
+	<p>Paragraph 2.</p>
+	<p>Paragraph 3.</p>
  </div>
 
  <hr>
 
  <code class="box">
-  #test3 input:focus + input {
+	#test3 input:focus + input {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
  </code>
 
  <div id="test3">
-  <input type="text" value="input 1">
-  <input type="text" value="input 2">
-  <input type="text" value="input 3">
+	<input type="text" value="input 1">
+	<input type="text" value="input 2">
+	<input type="text" value="input 3">
  </div>
 
  <hr>
 
  <code class="box">
-  #test4 p:hover ~ p {
+	#test4 p:hover ~ p {
 
-   background-color: yellow;
+	 background-color: yellow;
 
-  }
+	}
  </code>
 
  <div id="test4">
-  <p>Paragraph 1.</p>
-  <p>Paragraph 2.</p>
-  <p>Paragraph 3.</p>
-  <p>Paragraph 4.</p>
-  <p>Paragraph 5.</p>
-  <p>Paragraph 6.</p>
+	<p>Paragraph 1.</p>
+	<p>Paragraph 2.</p>
+	<p>Paragraph 3.</p>
+	<p>Paragraph 4.</p>
+	<p>Paragraph 5.</p>
+	<p>Paragraph 6.</p>
  </div>
 
  <p>&lt;&nbsp;<a href="index.html">back</a></p>
