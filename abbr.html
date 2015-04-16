@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+ <title>IE7 {CSS2: auto}</title>
+
+ <!-- Compliance patch for Microsoft browsers -->
+ <!--[if lt IE 9]><script src="../trunk/lib/IE9.js"></script><![endif]-->
+
+ <style>
+
+  abbr {
+
+   background-color: yellow;
+
+  }
+
+ </style>
+</head>
+
+<body>
+ <script src="ie7-demo.js"></script>
+ <h2>&lt;abbr&gt;</h2>
+
+ <p>This is an abbreviation: <abbr title="Abbreviation">abbr</abbr>.</p>
+
+ <p>The <abbr title="Document Object Model">DOM</abbr> structure is not altered.
+    Further, using a <abbr>DOM</abbr> query to retrieve the element (e.g.
+    <code>document.getElementsByTagName("abbr")</code>), will retrieve the correct
+    <code>&lt;abbr&gt;</code> tags. These elements will reveal a <code>tagName</code>
+    of "ABBR" and a <code>scopeName</code> of "HTML". A near perfect fix.</p>
+
+ <p>&lt;&nbsp;<a href="index.html">back</a></p>
+</body>
+</html>

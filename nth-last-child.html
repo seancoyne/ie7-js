@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+ <title>IE7 {CSS2: auto}</title>
+ <meta name="author" content="Bill Edney">
+
+ <!-- Compliance patch for Microsoft browsers -->
+ <!--[if lt IE 9]><script src="../trunk/lib/IE9.js"></script><![endif]-->
+
+  <style>
+   table.singular tr:nth-last-child(3) {
+    background: red;
+   }
+   table.singular2 tr:nth-last-child(0n+1) {
+    background: green;
+   }
+   table.all tr:nth-last-child(1n+0) {
+    background: orange;
+   }
+   table.all2 tr:nth-last-child(n+0) {
+    background: blue;
+   }
+   table.all3 tr:nth-last-child(n) {
+    background: red;
+   }
+   table.even tr:nth-last-child(even) {
+    background: green;
+   }
+   table.odd tr:nth-last-child(odd) {
+    background: orange;
+   }
+   table.lastRows tr:nth-last-child(1n+3) {
+    background: silver;
+   }
+   p:nth-last-child(4n) {
+    background: red;
+   }
+   p:nth-last-child(4n+1) {
+    background: green;
+   }
+   p:nth-last-child(4n+2) {
+    background: blue;
+   }
+  p:nth-last-child(4n+3) {
+    background: orange;
+   }
+  </style>
+ </head>
+
+ <body>
+  <script src="ie7-demo.js"></script>
+  
+  <h2>:nth-last-child(3) (selects second child)</h2>
+
+  <table class="singular">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+  <h2>:nth-last-child(0n+1) (selects last child)</h2>
+
+  <table class="singular2">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+  <h2>:nth-last-child(1n+0) (selects all)</h2>
+
+  <table class="all">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+  <h2>:nth-last-child(n+0) (selects all)</h2>
+
+  <table class="all2">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+  <h2>:nth-last-child(n) (selects all)</h2>
+
+  <table class="all3">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+  <h2>:nth-last-child(even) (also tests ':nth-last-child(2n+1)')</h2>
+
+  <table class="even">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+  <h2>:nth-last-child(odd) (also tests ':nth-last-child(2n)')</h2>
+
+  <table class="odd">
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+   <tr>
+    <td>foofy</td>
+   </tr>
+  </table>
+
+<h2>:nth-last-child(1n+3) (selects rows 1-2) (also tests ':nth-last-child(n+3)')</h2>
+
+ <table class="lastRows">
+  <tr>
+   <td>foofy</td>
+  </tr>
+  <tr>
+   <td>foofy</td>
+  </tr>
+  <tr>
+   <td>foofy</td>
+  </tr>
+  <tr>
+   <td>foofy</td>
+  </tr>
+ </table>
+
+  <div>
+   <p>This should be red</p>
+   <p>This should be orange</p>
+   <p>This should be blue</p>
+   <p>This should be green</p>
+  </div>
+
+ </body>
+
+</html>

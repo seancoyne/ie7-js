@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+ <title>IE7 {CSS2: auto}</title>
+
+ <!-- Compliance patch for Microsoft browsers -->
+ <!--[if lt IE 9]><script src="../trunk/lib/IE9.js"></script><![endif]-->
+
+ <style>
+
+  p.test {
+   font: 20px/24px cursive;
+   background: #ccc;
+   color: red;
+   text-align: center;
+  }
+
+  p.test:before, p.test:after {
+   display: block;
+   background: yellow none no-repeat top right;
+   text-align: left;
+   height: 30px;
+  }
+
+  p.test:before {
+   content: url(top-left.gif);
+   background-image: url(top-right.gif);
+  }
+
+  p.test:after {
+   content: url(bottom-left.gif);
+   background-image: url(bottom-right.gif);
+  }
+
+ </style>
+</head>
+<body>
+ <script src="ie7-demo.js"></script>
+ <h2>content: url(<i>image</i>)</h2>
+
+ <p class="test">Hello World!</p>
+
+ <p>&lt;&nbsp;<a href="index.html">back</a></p>
+</body>
+</html>

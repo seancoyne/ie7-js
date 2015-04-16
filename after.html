@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+ <title>IE7 {CSS2: auto}</title>
+
+ <!-- Compliance patch for Microsoft browsers -->
+ <!--[if lt IE 9]><script src="../trunk/lib/IE9.js"></script><![endif]-->
+
+ <style>
+
+  p.test {
+   background: skyblue;
+  }
+
+  #inline:after {
+   display: inline;
+   background-color: yellow;
+   content: "World!";
+   padding-left: .3em;
+  }
+
+  #block:after {
+   display: block;
+   font-family: "Courier New";
+   background-color: red;
+   content: "World!";
+  }
+
+ </style>
+</head>
+<body>
+ <script src="ie7-demo.js"></script>
+ <h2>::after</h2>
+
+ <h3>inline</h3>
+ <p class="test" id="inline">Hello</p>
+
+ <h3>block</h3>
+ <p class="test" id="block">Hello</p>
+
+ <p>&lt;&nbsp;<a href="index.html">back</a></p>
+</body>
+</html>
