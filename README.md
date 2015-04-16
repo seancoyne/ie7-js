@@ -72,11 +72,28 @@ Unfortunately, the transparent background image cannot be tiled (repeated) using
 
 Go to the [releases](https://github.com/seancoyne/ie7-js/releases) section to download the current version.
 
-### Getting Started
+## Getting Started
 Here is a nice introduction:
 
 http://www.charlescooke.me.uk/web/lab_notes/ie7_script.html
 
-### Demo
+## Demo
 
 https://seancoyne.github.io/ie7-js/
+
+## Links
+
+### Blogs
+
+* [All Blog Posts](http://dean.edwards.name/weblog/category/IE7/)
+* [Eric Meyer on IE7.js](http://meyerweb.com/eric/thoughts/2005/10/17/ie7-and-ie7/)
+* [The IE6 Equation](http://24ways.org/2008/the-ie6-equation)
+
+### External Links
+
+* [Getting Started](http://www.charlescooke.me.uk/web/lab_notes/ie7_script.html)
+* [Examples](https://seancoyne.github.io/ie7-js/)
+* [Hotlink](https://github.com/seancoyne/ie7-js/releases)
+
+### Groups
+* [Google Group](http://groups.google.com/group/ie7-js)
