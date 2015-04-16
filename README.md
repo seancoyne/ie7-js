@@ -70,7 +70,7 @@ Unfortunately, the transparent background image cannot be tiled (repeated) using
 
 ## Download
 
-Go to the [releases](releases) section to download the current version.
+Go to the [releases](https://github.com/seancoyne/ie7-js) section to download the current version.
 
 ### Getting Started
 Here is a nice introduction:
